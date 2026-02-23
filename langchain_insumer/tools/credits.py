@@ -1,4 +1,4 @@
-"""Tool for checking attestation credit balance."""
+"""Tool for checking verification credit balance."""
 
 import json
 from typing import Optional, Type
@@ -17,11 +17,11 @@ class CreditsSchema(BaseModel):
 
 
 class InsumerCreditsTool(BaseTool):
-    """Check the attestation credit balance for the current API key."""
+    """Check the verification credit balance for the current API key."""
 
     name: str = "insumer_credits"
     description: str = (
-        "Check the attestation credit balance, tier, and daily rate limit "
+        "Check the verification credit balance, tier, and daily rate limit "
         "for the current Insumer API key. No parameters needed."
     )
     args_schema: Type[CreditsSchema] = CreditsSchema

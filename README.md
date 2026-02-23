@@ -1,8 +1,8 @@
 # langchain-insumer
 
-LangChain integration for [The Insumer Model](https://insumermodel.com) Attestation API.
+LangChain integration for [The Insumer Model](https://insumermodel.com) On-Chain Verification API.
 
-Verify on-chain token balances and NFT ownership across 31 blockchains with privacy-preserving attestations. Returns only true/false — never exposes actual wallet balances.
+Privacy-preserving on-chain verification and attestation across 31 blockchains. Submit arbitrary conditions against on-chain state, receive an ECDSA-signed boolean — no balances or private data revealed.
 
 ## Installation
 
@@ -36,7 +36,7 @@ agent.run("Does wallet 0x1234... hold at least 100 USDC on Ethereum?")
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `InsumerAttestTool` | Verify on-chain conditions with signed attestation | 1/call |
+| `InsumerAttestTool` | Verify on-chain conditions with signed verification | 1/call |
 | `InsumerCheckDiscountTool` | Calculate discount for wallet at merchant | Free |
 | `InsumerListMerchantsTool` | Browse merchant directory | Free |
 | `InsumerListTokensTool` | List registered tokens and NFTs | Free |
@@ -68,7 +68,7 @@ tools = [
 ]
 ```
 
-## Attestation Example
+## Verification Example
 
 ```python
 import json
@@ -114,7 +114,7 @@ Ethereum, BNB Chain, Base, Avalanche, Polygon, Arbitrum, Optimism, Solana, Chili
 
 ## Links
 
-- [API Documentation](https://insumermodel.com/for-agents/)
+- [API Documentation](https://insumermodel.com/developers/)
 - [OpenAPI Spec](https://insumermodel.com/openapi.yaml)
 - [Full API Reference](https://insumermodel.com/llms-full.txt)
 

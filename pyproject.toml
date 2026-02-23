@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langchain-insumer"
-version = "0.1.0"
-description = "LangChain integration for The Insumer Model — privacy-preserving on-chain attestation across 31 blockchains"
+version = "0.1.2"
+description = "LangChain integration for InsumerAPI — privacy-preserving on-chain verification and attestation across 31 blockchains"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -16,12 +16,12 @@ keywords = [
     "langchain",
     "blockchain",
     "attestation",
-    "token-gated",
-    "nft",
+    "on-chain-verification",
+    "ecdsa",
     "web3",
     "privacy",
     "on-chain",
-    "verification",
+    "ai-agents",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -41,7 +41,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://insumermodel.com/for-agents/"
+Homepage = "https://insumermodel.com/developers/"
 Documentation = "https://insumermodel.com/llms-full.txt"
 Repository = "https://github.com/douglasborthwick-crypto/langchain-insumer"
 "API Reference" = "https://insumermodel.com/openapi.yaml"

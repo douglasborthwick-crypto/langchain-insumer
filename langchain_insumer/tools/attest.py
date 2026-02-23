@@ -1,4 +1,4 @@
-"""Tool for creating privacy-preserving on-chain attestations."""
+"""Tool for creating privacy-preserving on-chain verifications."""
 
 import json
 from typing import Any, Optional, Type
@@ -34,19 +34,19 @@ class AttestSchema(BaseModel):
 
 
 class InsumerAttestTool(BaseTool):
-    """Verify on-chain token balances or NFT ownership with a signed attestation.
+    """Verify on-chain token balances or NFT ownership with a signed verification.
 
     Returns only true/false per condition -- never exposes actual balances.
     The response includes an ECDSA P-256 signature for cryptographic proof.
-    Costs 1 attestation credit per call.
+    Costs 1 verification credit per call.
     """
 
     name: str = "insumer_attest"
     description: str = (
         "Verify on-chain conditions (token balances, NFT ownership) across 31 "
-        "blockchains. Returns a cryptographically signed true/false attestation "
+        "blockchains. Returns a cryptographically signed true/false verification "
         "without exposing actual wallet balances. Use this when you need to check "
-        "if a wallet holds a specific token or NFT. Costs 1 attestation credit."
+        "if a wallet holds a specific token or NFT. Costs 1 verification credit."
     )
     args_schema: Type[AttestSchema] = AttestSchema
 
@@ -62,7 +62,7 @@ class InsumerAttestTool(BaseTool):
         solana_wallet: Optional[str] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
-        """Execute the attestation."""
+        """Execute the on-chain verification."""
         parsed_conditions: list[dict[str, Any]] = json.loads(conditions)
         result = self.api_wrapper.attest(
             conditions=parsed_conditions,

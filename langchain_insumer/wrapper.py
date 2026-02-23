@@ -1,4 +1,4 @@
-"""API wrapper for The Insumer Model Attestation API."""
+"""API wrapper for The Insumer Model On-Chain Verification API."""
 
 from typing import Any, Optional
 
@@ -11,7 +11,7 @@ BASE_URL = "https://us-central1-insumer-merchant.cloudfunctions.net/insumerApi/v
 class InsumerAPIWrapper(BaseModel):
     """Wrapper around The Insumer Model API.
 
-    Provides privacy-preserving on-chain attestation and token-gated commerce
+    Provides privacy-preserving on-chain verification and token-gated commerce
     across 31 blockchains. Verifies token balances and NFT ownership without
     exposing actual wallet balances.
 
@@ -56,11 +56,11 @@ class InsumerAPIWrapper(BaseModel):
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
     ) -> dict:
-        """Create a privacy-preserving on-chain attestation.
+        """Create a privacy-preserving on-chain verification.
 
         Verifies 1-10 conditions (token balances, NFT ownership) and returns
         a cryptographically signed true/false result. Never exposes actual
-        balances. Costs 1 attestation credit.
+        balances. Costs 1 verification credit.
 
         Args:
             conditions: List of condition dicts, each with:
@@ -74,7 +74,7 @@ class InsumerAPIWrapper(BaseModel):
             solana_wallet: Solana wallet address (base58)
 
         Returns:
-            API response with attestation results and ECDSA signature.
+            API response with verification results and ECDSA signature.
         """
         body: dict[str, Any] = {"conditions": conditions}
         if wallet:
@@ -84,7 +84,7 @@ class InsumerAPIWrapper(BaseModel):
         return self._post("/attest", body)
 
     def get_credits(self) -> dict:
-        """Check attestation credit balance for the API key."""
+        """Check verification credit balance for the API key."""
         return self._get("/credits")
 
     def list_merchants(

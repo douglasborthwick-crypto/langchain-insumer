@@ -1,4 +1,4 @@
-"""LangChain integration for The Insumer Model Attestation API."""
+"""LangChain integration for The Insumer Model On-Chain Verification API."""
 
 from langchain_insumer.tools.attest import InsumerAttestTool
 from langchain_insumer.tools.check_discount import InsumerCheckDiscountTool
