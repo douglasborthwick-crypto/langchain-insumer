@@ -21,6 +21,15 @@ class AttestSchema(BaseModel):
         default=None,
         description="Solana wallet address (base58) to verify.",
     )
+    proof: Optional[str] = Field(
+        default=None,
+        description=(
+            'Set to "merkle" to include EIP-1186 Merkle storage proofs in results. '
+            "Proofs available for token_balance conditions on RPC chains "
+            "(1, 56, 8453, 43114, 137, 42161, 10, 88888, 1868, 98866). "
+            "Costs 2 credits instead of 1. Reveals raw balance to caller."
+        ),
+    )
     conditions: str = Field(
         description=(
             'JSON array of conditions. Each condition: {"type": "token_balance" or '
@@ -38,7 +47,7 @@ class InsumerAttestTool(BaseTool):
 
     Returns only true/false per condition -- never exposes actual balances.
     The response includes an ECDSA P-256 signature for cryptographic proof.
-    Costs 1 verification credit per call.
+    Costs 1 verification credit per call, or 2 credits with proof="merkle".
     """
 
     name: str = "insumer_attest"
@@ -46,7 +55,8 @@ class InsumerAttestTool(BaseTool):
         "Verify on-chain conditions (token balances, NFT ownership) across 31 "
         "blockchains. Returns a cryptographically signed true/false verification "
         "without exposing actual wallet balances. Use this when you need to check "
-        "if a wallet holds a specific token or NFT. Costs 1 verification credit."
+        "if a wallet holds a specific token or NFT. Costs 1 verification credit. "
+        'Pass proof="merkle" for EIP-1186 Merkle storage proofs (2 credits).'
     )
     args_schema: Type[AttestSchema] = AttestSchema
 
@@ -60,6 +70,7 @@ class InsumerAttestTool(BaseTool):
         conditions: str,
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        proof: Optional[str] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Execute the on-chain verification."""
@@ -68,5 +79,6 @@ class InsumerAttestTool(BaseTool):
             conditions=parsed_conditions,
             wallet=wallet,
             solana_wallet=solana_wallet,
+            proof=proof,
         )
         return json.dumps(result, indent=2)

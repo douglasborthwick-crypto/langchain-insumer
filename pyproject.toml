@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langchain-insumer"
-version = "0.1.2"
+version = "0.1.4"
 description = "LangChain integration for InsumerAPI — privacy-preserving on-chain verification and attestation across 31 blockchains"
 readme = "README.md"
 license = {text = "MIT"}

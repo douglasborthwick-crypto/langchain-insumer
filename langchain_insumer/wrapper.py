@@ -55,12 +55,14 @@ class InsumerAPIWrapper(BaseModel):
         conditions: list[dict[str, Any]],
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        proof: Optional[str] = None,
     ) -> dict:
         """Create a privacy-preserving on-chain verification.
 
         Verifies 1-10 conditions (token balances, NFT ownership) and returns
         a cryptographically signed true/false result. Never exposes actual
-        balances. Costs 1 verification credit.
+        balances. Costs 1 verification credit (standard) or 2 credits (with
+        proof="merkle").
 
         Args:
             conditions: List of condition dicts, each with:
@@ -72,15 +74,23 @@ class InsumerAPIWrapper(BaseModel):
                 - label: Human-readable label
             wallet: EVM wallet address (0x...)
             solana_wallet: Solana wallet address (base58)
+            proof: Set to "merkle" for EIP-1186 Merkle storage proofs.
+                Available for token_balance conditions on RPC chains only.
+                Costs 2 credits. Reveals raw balance to the caller.
 
         Returns:
             API response with verification results and ECDSA signature.
+            When proof="merkle", each result includes a proof object with
+            accountProof, storageProof, storageHash, blockNumber, and
+            mappingSlot fields.
         """
         body: dict[str, Any] = {"conditions": conditions}
         if wallet:
             body["wallet"] = wallet
         if solana_wallet:
             body["solanaWallet"] = solana_wallet
+        if proof:
+            body["proof"] = proof
         return self._post("/attest", body)
 
     def get_credits(self) -> dict:

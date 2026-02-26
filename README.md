@@ -36,7 +36,7 @@ agent.run("Does wallet 0x1234... hold at least 100 USDC on Ethereum?")
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `InsumerAttestTool` | Verify on-chain conditions with signed verification | 1/call |
+| `InsumerAttestTool` | Verify on-chain conditions with signed verification. Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
 | `InsumerCheckDiscountTool` | Calculate discount for wallet at merchant | Free |
 | `InsumerListMerchantsTool` | Browse merchant directory | Free |
 | `InsumerListTokensTool` | List registered tokens and NFTs | Free |
@@ -100,6 +100,36 @@ print(f"Pass: {attestation['pass']}")
 for r in attestation["results"]:
     print(f"  {r['label']}: {'met' if r['met'] else 'not met'}")
 print(f"Signature: {result['data']['sig']}")
+```
+
+## Merkle Proof Example
+
+```python
+# Request EIP-1186 Merkle storage proofs for trustless verification
+result = api.attest(
+    wallet="0x1234567890abcdef1234567890abcdef12345678",
+    proof="merkle",
+    conditions=[
+        {
+            "type": "token_balance",
+            "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "chainId": 1,
+            "threshold": 1000,
+            "decimals": 6,
+            "label": "USDC >= 1000",
+        }
+    ],
+)
+
+# Each result includes a proof object
+for r in result["data"]["attestation"]["results"]:
+    proof = r.get("proof", {})
+    if proof.get("available"):
+        print(f"Block: {proof['blockNumber']}")
+        print(f"Storage slot: {proof['mappingSlot']}")
+        print(f"Proof nodes: {len(proof['accountProof'])} account, {len(proof['storageProof'])} storage")
+    else:
+        print(f"Proof unavailable: {proof.get('reason')}")
 ```
 
 ## Supported Chains (31)
