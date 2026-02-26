@@ -1,8 +1,10 @@
 # langchain-insumer
 
-LangChain integration for [The Insumer Model](https://insumermodel.com) On-Chain Verification API.
+LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- on-chain verification across 31 blockchains. Returns ECDSA-signed booleans without exposing wallet balances. Up to 10 conditions per request, each with its own chainId. Optional Merkle storage proofs for trustless verification.
 
-Privacy-preserving on-chain verification and attestation across 31 blockchains. Submit arbitrary conditions against on-chain state, receive an ECDSA-signed boolean — no balances or private data revealed.
+**In production:** [DJD Agent Score](https://github.com/jacobsd32-cpu/djdagentscore) (Coinbase x402 ecosystem) uses InsumerAPI for AI agent wallet trust scoring. [Case study](https://insumermodel.com/blog/djd-agent-score-insumer-api-integration.html).
+
+Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (16 tools, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
 
 ## Installation
 
@@ -36,7 +38,8 @@ agent.run("Does wallet 0x1234... hold at least 100 USDC on Ethereum?")
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `InsumerAttestTool` | Verify on-chain conditions with signed verification. Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
+| `InsumerAttestTool` | Verify on-chain conditions with signed verification. Response includes `kid` for key identification. Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
+| `InsumerJwksTool` | Get the JWKS with InsumerAPI's ECDSA P-256 public signing key. Match `kid` from attestation responses. | Free |
 | `InsumerCheckDiscountTool` | Calculate discount for wallet at merchant | Free |
 | `InsumerListMerchantsTool` | Browse merchant directory | Free |
 | `InsumerListTokensTool` | List registered tokens and NFTs | Free |
@@ -51,6 +54,7 @@ from langchain_insumer import (
     InsumerAttestTool,
     InsumerCheckDiscountTool,
     InsumerCreditsTool,
+    InsumerJwksTool,
     InsumerListMerchantsTool,
     InsumerListTokensTool,
     InsumerVerifyTool,
@@ -60,6 +64,7 @@ api = InsumerAPIWrapper(api_key="insr_live_YOUR_KEY_HERE")
 
 tools = [
     InsumerAttestTool(api_wrapper=api),
+    InsumerJwksTool(api_wrapper=api),
     InsumerCheckDiscountTool(api_wrapper=api),
     InsumerCreditsTool(api_wrapper=api),
     InsumerListMerchantsTool(api_wrapper=api),
@@ -100,6 +105,7 @@ print(f"Pass: {attestation['pass']}")
 for r in attestation["results"]:
     print(f"  {r['label']}: {'met' if r['met'] else 'not met'}")
 print(f"Signature: {result['data']['sig']}")
+print(f"Key ID: {result['data']['kid']}")
 ```
 
 ## Merkle Proof Example

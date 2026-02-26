@@ -50,6 +50,22 @@ class InsumerAPIWrapper(BaseModel):
         resp.raise_for_status()
         return resp.json()
 
+    def get_jwks(self) -> dict:
+        """Get the JWKS containing InsumerAPI's ECDSA P-256 public signing key.
+
+        No authentication required. The ``kid`` field matches the ``kid`` in
+        attestation responses, enabling automatic key rotation.
+
+        Returns:
+            JWKS document with the public signing key.
+        """
+        resp = requests.get(
+            f"{BASE_URL}/jwks",
+            timeout=self.timeout,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
     def attest(
         self,
         conditions: list[dict[str, Any]],
@@ -79,7 +95,9 @@ class InsumerAPIWrapper(BaseModel):
                 Costs 2 credits. Reveals raw balance to the caller.
 
         Returns:
-            API response with verification results and ECDSA signature.
+            API response with verification results, ECDSA signature (``sig``),
+            and key ID (``kid``) identifying the signing key. Fetch the public
+            key via ``get_jwks()`` to verify signatures.
             When proof="merkle", each result includes a proof object with
             accountProof, storageProof, storageHash, blockNumber, and
             mappingSlot fields.
@@ -92,6 +110,37 @@ class InsumerAPIWrapper(BaseModel):
         if proof:
             body["proof"] = proof
         return self._post("/attest", body)
+
+    def wallet_trust(
+        self,
+        wallet: str,
+        solana_wallet: Optional[str] = None,
+        proof: Optional[str] = None,
+    ) -> dict:
+        """Generate a structured wallet trust fact profile.
+
+        Checks 14 curated conditions across stablecoins (7 chains), governance
+        tokens (4), and NFTs (3). Returns per-dimension pass/fail counts and
+        an overall summary. No score — just cryptographically verifiable evidence.
+        Costs 3 credits (standard) or 6 credits (with proof="merkle").
+
+        Args:
+            wallet: EVM wallet address (0x...) to profile.
+            solana_wallet: Solana wallet address (base58). If provided, adds
+                USDC on Solana check (15th condition).
+            proof: Set to "merkle" for EIP-1186 Merkle storage proofs on
+                stablecoin and governance checks. Costs 6 credits.
+
+        Returns:
+            API response with trust profile, ECDSA signature (``sig``),
+            and key ID (``kid``).
+        """
+        body: dict[str, Any] = {"wallet": wallet}
+        if solana_wallet:
+            body["solanaWallet"] = solana_wallet
+        if proof:
+            body["proof"] = proof
+        return self._post("/trust", body)
 
     def get_credits(self) -> dict:
         """Check verification credit balance for the API key."""
