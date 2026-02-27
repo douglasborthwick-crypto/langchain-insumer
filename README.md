@@ -4,7 +4,7 @@ LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- on-cha
 
 **In production:** [DJD Agent Score](https://github.com/jacobsd32-cpu/djdagentscore) (Coinbase x402 ecosystem) uses InsumerAPI for AI agent wallet trust scoring. [Case study](https://insumermodel.com/blog/djd-agent-score-insumer-api-integration.html).
 
-Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (16 tools, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
+Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (23 tools, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
 
 ## Installation
 
@@ -34,42 +34,112 @@ agent = initialize_agent(tools, llm, agent=AgentType.OPENAI_FUNCTIONS)
 agent.run("Does wallet 0x1234... hold at least 100 USDC on Ethereum?")
 ```
 
-## Available Tools
+## Available Tools (23)
+
+### Verification
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `InsumerAttestTool` | Verify on-chain conditions with signed verification. Response includes `kid` for key identification. Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
-| `InsumerJwksTool` | Get the JWKS with InsumerAPI's ECDSA P-256 public signing key. Match `kid` from attestation responses. | Free |
-| `InsumerCheckDiscountTool` | Calculate discount for wallet at merchant | Free |
-| `InsumerListMerchantsTool` | Browse merchant directory | Free |
-| `InsumerListTokensTool` | List registered tokens and NFTs | Free |
-| `InsumerVerifyTool` | Create signed discount code (INSR-XXXXX) | 1/call |
-| `InsumerCreditsTool` | Check API key credit balance | Free |
+| `InsumerAttestTool` | Verify on-chain conditions (token balances, NFT ownership, EAS attestations, Farcaster identity). Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
+| `InsumerComplianceTemplatesTool` | List available EAS compliance templates (Coinbase Verifications on Base, Gitcoin Passport on Optimism). | Free |
+| `InsumerWalletTrustTool` | Generate wallet trust fact profile (17 checks, 4 dimensions). | 3/call (6 with merkle) |
+| `InsumerBatchWalletTrustTool` | Batch trust profiles for up to 10 wallets. 5-8x faster. | 3/wallet (6 with merkle) |
+| `InsumerVerifyTool` | Create signed discount code (INSR-XXXXX), valid 30 min. | 1/call |
+| `InsumerConfirmPaymentTool` | Confirm USDC payment for a discount code. | Free |
+| `InsumerJwksTool` | Get ECDSA P-256 public signing key (JWKS). | Free |
+
+### Discovery
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `InsumerListMerchantsTool` | Browse merchant directory, filter by token/status. | Free |
+| `InsumerGetMerchantTool` | Get full public merchant profile with tier structures. | Free |
+| `InsumerListTokensTool` | List registered tokens and NFTs, filter by chain/symbol. | Free |
+| `InsumerCheckDiscountTool` | Calculate discount for a wallet at a merchant. | Free |
+
+### Credits
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `InsumerCreditsTool` | Check API key credit balance and tier. | Free |
+| `InsumerBuyCreditsTool` | Buy API key credits with USDC (25 credits/$1). | — |
+| `InsumerBuyMerchantCreditsTool` | Buy merchant credits with USDC (25 credits/$1). | — |
+
+### Merchant Onboarding
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `InsumerCreateMerchantTool` | Create a new merchant (100 free credits). | Free |
+| `InsumerMerchantStatusTool` | Get private merchant details (owner only). | Free |
+| `InsumerConfigureTokensTool` | Configure token discount tiers (max 8 tokens). | Free |
+| `InsumerConfigureNftsTool` | Configure NFT collection discounts (max 4). | Free |
+| `InsumerConfigureSettingsTool` | Update discount mode, cap, USDC payments. | Free |
+| `InsumerPublishDirectoryTool` | Publish merchant to public directory. | Free |
+
+### Commerce Protocol Integration
+
+| Tool | Description | Credits |
+|------|-------------|---------|
+| `InsumerAcpDiscountTool` | Check discount eligibility in OpenAI/Stripe ACP format. Returns coupon objects and per-item allocations. | 1/call |
+| `InsumerUcpDiscountTool` | Check discount eligibility in Google UCP format. Returns title, extension field, and applied array. | 1/call |
+| `InsumerValidateCodeTool` | Validate an INSR-XXXXX discount code. Returns validity, discount percent, expiry. | Free |
 
 ## Using All Tools
 
 ```python
 from langchain_insumer import (
     InsumerAPIWrapper,
+    InsumerAcpDiscountTool,
     InsumerAttestTool,
+    InsumerBatchWalletTrustTool,
+    InsumerBuyCreditsTool,
+    InsumerBuyMerchantCreditsTool,
     InsumerCheckDiscountTool,
+    InsumerComplianceTemplatesTool,
+    InsumerConfigureNftsTool,
+    InsumerConfigureSettingsTool,
+    InsumerConfigureTokensTool,
+    InsumerConfirmPaymentTool,
+    InsumerCreateMerchantTool,
     InsumerCreditsTool,
+    InsumerGetMerchantTool,
     InsumerJwksTool,
     InsumerListMerchantsTool,
     InsumerListTokensTool,
+    InsumerMerchantStatusTool,
+    InsumerPublishDirectoryTool,
+    InsumerUcpDiscountTool,
+    InsumerValidateCodeTool,
     InsumerVerifyTool,
+    InsumerWalletTrustTool,
 )
 
 api = InsumerAPIWrapper(api_key="insr_live_YOUR_KEY_HERE")
 
 tools = [
     InsumerAttestTool(api_wrapper=api),
+    InsumerComplianceTemplatesTool(api_wrapper=api),
+    InsumerWalletTrustTool(api_wrapper=api),
+    InsumerBatchWalletTrustTool(api_wrapper=api),
+    InsumerVerifyTool(api_wrapper=api),
+    InsumerConfirmPaymentTool(api_wrapper=api),
     InsumerJwksTool(api_wrapper=api),
+    InsumerListMerchantsTool(api_wrapper=api),
+    InsumerGetMerchantTool(api_wrapper=api),
+    InsumerListTokensTool(api_wrapper=api),
     InsumerCheckDiscountTool(api_wrapper=api),
     InsumerCreditsTool(api_wrapper=api),
-    InsumerListMerchantsTool(api_wrapper=api),
-    InsumerListTokensTool(api_wrapper=api),
-    InsumerVerifyTool(api_wrapper=api),
+    InsumerBuyCreditsTool(api_wrapper=api),
+    InsumerBuyMerchantCreditsTool(api_wrapper=api),
+    InsumerCreateMerchantTool(api_wrapper=api),
+    InsumerMerchantStatusTool(api_wrapper=api),
+    InsumerConfigureTokensTool(api_wrapper=api),
+    InsumerConfigureNftsTool(api_wrapper=api),
+    InsumerConfigureSettingsTool(api_wrapper=api),
+    InsumerPublishDirectoryTool(api_wrapper=api),
+    InsumerAcpDiscountTool(api_wrapper=api),
+    InsumerUcpDiscountTool(api_wrapper=api),
+    InsumerValidateCodeTool(api_wrapper=api),
 ]
 ```
 
@@ -106,6 +176,37 @@ for r in attestation["results"]:
     print(f"  {r['label']}: {'met' if r['met'] else 'not met'}")
 print(f"Signature: {result['data']['sig']}")
 print(f"Key ID: {result['data']['kid']}")
+```
+
+## Merchant Onboarding Example
+
+```python
+api = InsumerAPIWrapper(api_key="insr_live_YOUR_KEY_HERE")
+
+# 1. Create merchant
+merchant = api.create_merchant(
+    company_name="My Coffee Shop",
+    company_id="my-coffee-shop",
+    location="New York",
+)
+
+# 2. Configure token tiers
+api.configure_tokens(
+    merchant_id="my-coffee-shop",
+    own_token={
+        "symbol": "COFFEE",
+        "chainId": 8453,
+        "contractAddress": "0x...",
+        "decimals": 18,
+        "tiers": [
+            {"name": "Bronze", "threshold": 100, "discount": 5},
+            {"name": "Gold", "threshold": 1000, "discount": 15},
+        ],
+    },
+)
+
+# 3. Publish to directory
+api.publish_directory(merchant_id="my-coffee-shop")
 ```
 
 ## Merkle Proof Example
