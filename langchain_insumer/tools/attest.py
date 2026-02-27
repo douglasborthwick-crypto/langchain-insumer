@@ -33,30 +33,40 @@ class AttestSchema(BaseModel):
     conditions: str = Field(
         description=(
             'JSON array of conditions. Each condition: {"type": "token_balance" or '
-            '"nft_ownership", "contractAddress": "0x...", "chainId": 1, '
-            '"threshold": 1000, "decimals": 6, "label": "USDC >= 1000"}. '
+            '"nft_ownership" or "eas_attestation" or "farcaster_id", "contractAddress": "0x...", '
+            '"chainId": 1, "threshold": 1000, "decimals": 6, "label": "USDC >= 1000"}. '
+            'For eas_attestation: use "template": "coinbase_verified_account" (or '
+            '"coinbase_verified_country", "coinbase_one", "gitcoin_passport_score", '
+            '"gitcoin_passport_active") instead of contractAddress, '
+            'or specify raw "schemaId", "attester", "indexer", "chainId". '
+            'For farcaster_id: no extra fields needed (checks IdRegistry on Optimism). '
             "Supported chains: Ethereum (1), BNB (56), Base (8453), Polygon (137), "
-            "Arbitrum (42161), Optimism (10), Avalanche (43114), Solana (\"solana\"), "
-            "and 23 more. Max 10 conditions per call."
+            "Arbitrum (42161), Optimism (10), Avalanche (43114), World Chain (480), "
+            "Solana (\"solana\"), and 22 more. Max 10 conditions per call."
         ),
     )
 
 
 class InsumerAttestTool(BaseTool):
-    """Verify on-chain token balances or NFT ownership with a signed verification.
+    """Verify on-chain token balances, NFT ownership, EAS attestations, or Farcaster identity.
 
     Returns only true/false per condition -- never exposes actual balances.
     The response includes an ECDSA P-256 signature for cryptographic proof.
     Costs 1 verification credit per call, or 2 credits with proof="merkle".
+    For EAS attestations, use a compliance template (Coinbase Verifications,
+    Gitcoin Passport) or raw schemaId. For Farcaster, use type "farcaster_id".
     """
 
     name: str = "insumer_attest"
     description: str = (
-        "Verify on-chain conditions (token balances, NFT ownership) across 31 "
-        "blockchains. Returns a cryptographically signed true/false verification "
-        "without exposing actual wallet balances. Use this when you need to check "
-        "if a wallet holds a specific token or NFT. Costs 1 verification credit. "
-        'Pass proof="merkle" for EIP-1186 Merkle storage proofs (2 credits).'
+        "Verify on-chain conditions (token balances, NFT ownership, EAS attestations, "
+        "Farcaster identity) across 31 blockchains. Returns a cryptographically signed "
+        "true/false verification without exposing actual wallet balances. Use this when "
+        "you need to check if a wallet holds a specific token or NFT, has an EAS "
+        "attestation (Coinbase Verifications, Gitcoin Passport), or is registered on "
+        "Farcaster. Costs 1 verification credit. "
+        'Pass proof="merkle" for EIP-1186 Merkle storage proofs (2 credits). '
+        "Use insumer_compliance_templates to list available EAS templates."
     )
     args_schema: Type[AttestSchema] = AttestSchema
 
