@@ -5,7 +5,7 @@ from typing import Any, Optional
 import requests
 from pydantic import BaseModel, Field
 
-BASE_URL = "https://us-central1-insumer-merchant.cloudfunctions.net/insumerApi/v1"
+BASE_URL = "https://api.insumermodel.com/v1"
 
 
 class InsumerAPIWrapper(BaseModel):
