@@ -42,12 +42,14 @@ class InsumerWalletTrustTool(BaseTool):
 
     name: str = "insumer_wallet_trust"
     description: str = (
-        "Generate a wallet trust fact profile across stablecoins, governance "
-        "tokens, NFTs, and staking positions. Send a wallet address, get 17 "
-        "curated checks across 7 chains organized by dimension. Returns "
-        "ECDSA-signed evidence — no score, just facts. Use this when you need "
-        "a comprehensive wallet assessment without specifying individual "
-        'conditions. Costs 3 credits (standard) or 6 credits (proof="merkle").'
+        "Generate a wallet trust fact profile. 17 curated checks across "
+        "stablecoins (USDC on 7 chains), governance tokens (UNI, AAVE, ARB, "
+        "OP), NFTs (BAYC, Pudgy Penguins, Wrapped CryptoPunks), and staking "
+        "positions (stETH, rETH, cbETH). Returns per-dimension pass/fail "
+        "counts and ECDSA-signed evidence — no score, just facts. Use this "
+        "when you need a comprehensive wallet assessment without specifying "
+        'individual conditions. Costs 3 credits (standard) or 6 credits '
+        '(proof="merkle").'
     )
     args_schema: Type[WalletTrustSchema] = WalletTrustSchema
 

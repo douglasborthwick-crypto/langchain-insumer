@@ -23,6 +23,7 @@ class ListMerchantsSchema(BaseModel):
     )
     limit: int = Field(
         default=50,
+        le=200,
         description="Results per page (max 200).",
     )
     offset: int = Field(

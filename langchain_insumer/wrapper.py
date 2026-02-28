@@ -442,6 +442,45 @@ class InsumerAPIWrapper(BaseModel):
             body["items"] = items
         return self._post("/ucp/discount", body)
 
+    def request_domain_verification(
+        self,
+        merchant_id: str,
+        domain: str,
+    ) -> dict:
+        """Request a domain verification token for a merchant.
+
+        Returns a token and three verification methods (DNS TXT record,
+        HTML meta tag, or file upload). After placing the token, call
+        ``verify_domain()`` to complete verification. Owner only.
+
+        Args:
+            merchant_id: Merchant identifier.
+            domain: Domain to verify (e.g. 'example.com').
+
+        Returns:
+            Verification token and instructions for all three methods.
+        """
+        return self._post(f"/merchants/{merchant_id}/domain-verification", {
+            "domain": domain,
+        })
+
+    def verify_domain(self, merchant_id: str) -> dict:
+        """Verify domain ownership for a merchant.
+
+        Call after placing the verification token (from
+        ``request_domain_verification()``) via DNS TXT, meta tag, or file.
+        The server checks all three methods automatically. Rate limited
+        to 5 attempts per hour. Owner only.
+
+        Args:
+            merchant_id: Merchant identifier.
+
+        Returns:
+            Verification result with ``verified`` (bool), ``domain``,
+            and ``method`` (if successful) or ``attemptsRemaining``.
+        """
+        return self._put(f"/merchants/{merchant_id}/domain-verification")
+
     def validate_code(self, code: str) -> dict:
         """Validate an INSR-XXXXX discount code.
 

@@ -37,7 +37,7 @@ class InsumerVerifyTool(BaseTool):
         "Create a signed discount verification code (INSR-XXXXX) for a wallet "
         "at a specific merchant. Returns tier and discount percentage -- never "
         "raw balance amounts. The code is valid for 30 minutes and includes "
-        "an ECDSA signature. Costs 1 credit."
+        "an ECDSA signature. Costs 1 merchant credit."
     )
     args_schema: Type[VerifySchema] = VerifySchema
 

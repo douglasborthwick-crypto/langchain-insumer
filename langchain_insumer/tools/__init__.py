@@ -19,9 +19,11 @@ from langchain_insumer.tools.list_merchants import InsumerListMerchantsTool
 from langchain_insumer.tools.list_tokens import InsumerListTokensTool
 from langchain_insumer.tools.merchant_status import InsumerMerchantStatusTool
 from langchain_insumer.tools.publish_directory import InsumerPublishDirectoryTool
+from langchain_insumer.tools.request_domain_verification import InsumerRequestDomainVerificationTool
 from langchain_insumer.tools.ucp_discount import InsumerUcpDiscountTool
 from langchain_insumer.tools.validate_code import InsumerValidateCodeTool
 from langchain_insumer.tools.verify import InsumerVerifyTool
+from langchain_insumer.tools.verify_domain import InsumerVerifyDomainTool
 from langchain_insumer.tools.wallet_trust import InsumerWalletTrustTool
 
 __all__ = [
@@ -44,8 +46,10 @@ __all__ = [
     "InsumerListTokensTool",
     "InsumerMerchantStatusTool",
     "InsumerPublishDirectoryTool",
+    "InsumerRequestDomainVerificationTool",
     "InsumerUcpDiscountTool",
     "InsumerValidateCodeTool",
     "InsumerVerifyTool",
+    "InsumerVerifyDomainTool",
     "InsumerWalletTrustTool",
 ]
