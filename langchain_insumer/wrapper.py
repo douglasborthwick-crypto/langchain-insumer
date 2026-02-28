@@ -159,7 +159,7 @@ class InsumerAPIWrapper(BaseModel):
         Args:
             wallet: EVM wallet address (0x...) to profile.
             solana_wallet: Solana wallet address (base58). If provided, adds
-                USDC on Solana check (15th condition).
+                USDC on Solana check (18th check).
             proof: Set to "merkle" for EIP-1186 Merkle storage proofs on
                 stablecoin and governance checks. Costs 6 credits.
 

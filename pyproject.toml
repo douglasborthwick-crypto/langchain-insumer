@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "langchain-insumer"
-version = "0.7.1"
+version = "0.7.2"
 description = "LangChain tools for InsumerAPI — on-chain verification, wallet trust profiles, EAS attestations, Gitcoin Passport, Farcaster ID, staking positions, compliance templates, ACP/UCP commerce protocol integration, merchant onboarding, and credit management across 31 blockchains. ECDSA-signed booleans, optional Merkle proofs, 23 tools. Used by DJD Agent Score (Coinbase x402)."
 readme = "README.md"
 license = {text = "MIT"}

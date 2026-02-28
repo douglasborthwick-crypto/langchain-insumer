@@ -5,7 +5,7 @@ from typing import Optional, Type
 
 from langchain_core.callbacks import CallbackManagerForToolRun
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from langchain_insumer.wrapper import InsumerAPIWrapper
 
@@ -34,7 +34,7 @@ class InsumerComplianceTemplatesTool(BaseTool):
     )
     args_schema: Type[ComplianceTemplatesSchema] = ComplianceTemplatesSchema
 
-    api_wrapper: InsumerAPIWrapper
+    api_wrapper: InsumerAPIWrapper = Field(..., exclude=True)
 
     def __init__(self, api_wrapper: InsumerAPIWrapper) -> None:
         super().__init__(api_wrapper=api_wrapper)
