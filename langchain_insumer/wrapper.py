@@ -12,7 +12,7 @@ class InsumerAPIWrapper(BaseModel):
     """Wrapper around The Insumer Model API.
 
     Provides privacy-preserving on-chain verification and token-gated commerce
-    across 31 blockchains. Verifies token balances and NFT ownership without
+    across 32 blockchains. Verifies token balances and NFT ownership without
     exposing actual wallet balances.
 
     Args:
@@ -97,6 +97,7 @@ class InsumerAPIWrapper(BaseModel):
         conditions: list[dict[str, Any]],
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
         proof: Optional[str] = None,
     ) -> dict:
         """Create a privacy-preserving on-chain verification.
@@ -109,11 +110,13 @@ class InsumerAPIWrapper(BaseModel):
         Args:
             conditions: List of condition dicts, each with:
                 - type: "token_balance", "nft_ownership", "eas_attestation", or "farcaster_id"
-                - contractAddress: Token/NFT contract address (for token_balance/nft_ownership)
-                - chainId: EVM chain ID (int) or "solana"
+                - contractAddress: Token/NFT contract address (for token_balance/nft_ownership).
+                  For XRPL: use r-address issuer for trust line tokens, or "native" for XRP.
+                - chainId: EVM chain ID (int), "solana", or "xrpl"
                 - threshold: Min balance (for token_balance)
                 - decimals: Token decimals (default 18)
                 - label: Human-readable label
+                - currency: XRPL trust line currency code (e.g. "USD" for RLUSD)
                 - template: Compliance template name (for eas_attestation, e.g.
                   "coinbase_verified_account", "gitcoin_passport_score", "gitcoin_passport_active")
                 - schemaId: EAS schema ID (for eas_attestation, if not using template)
@@ -121,6 +124,8 @@ class InsumerAPIWrapper(BaseModel):
                 - indexer: EAS indexer contract (optional, for eas_attestation)
             wallet: EVM wallet address (0x...)
             solana_wallet: Solana wallet address (base58)
+            xrpl_wallet: XRPL wallet address (r-address). For verifying XRP,
+                trust line tokens (RLUSD, USDC), or NFTs on XRP Ledger.
             proof: Set to "merkle" for EIP-1186 Merkle storage proofs.
                 Available for token_balance conditions on RPC chains only.
                 Costs 2 credits. Reveals raw balance to the caller.
@@ -138,6 +143,8 @@ class InsumerAPIWrapper(BaseModel):
             body["wallet"] = wallet
         if solana_wallet:
             body["solanaWallet"] = solana_wallet
+        if xrpl_wallet:
+            body["xrplWallet"] = xrpl_wallet
         if proof:
             body["proof"] = proof
         return self._post("/attest", body)
@@ -146,12 +153,14 @@ class InsumerAPIWrapper(BaseModel):
         self,
         wallet: str,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
         proof: Optional[str] = None,
     ) -> dict:
         """Generate a structured wallet trust fact profile.
 
-        Checks 17 curated conditions across stablecoins (7 chains), governance
+        Checks 17 base conditions across stablecoins (7 chains), governance
         tokens (4), NFTs (3), and staking positions (stETH, rETH, cbETH).
+        Up to 20 checks with optional Solana and XRPL wallets.
         Returns per-dimension pass/fail counts and an overall summary. No score
         — just cryptographically verifiable evidence. Costs 3 credits (standard)
         or 6 credits (with proof="merkle").
@@ -159,7 +168,9 @@ class InsumerAPIWrapper(BaseModel):
         Args:
             wallet: EVM wallet address (0x...) to profile.
             solana_wallet: Solana wallet address (base58). If provided, adds
-                USDC on Solana check (18th check).
+                USDC on Solana check.
+            xrpl_wallet: XRPL wallet address (r-address). If provided, adds
+                RLUSD and USDC on XRPL checks.
             proof: Set to "merkle" for EIP-1186 Merkle storage proofs on
                 stablecoin and governance checks. Costs 6 credits.
 
@@ -170,6 +181,8 @@ class InsumerAPIWrapper(BaseModel):
         body: dict[str, Any] = {"wallet": wallet}
         if solana_wallet:
             body["solanaWallet"] = solana_wallet
+        if xrpl_wallet:
+            body["xrplWallet"] = xrpl_wallet
         if proof:
             body["proof"] = proof
         return self._post("/trust", body)
@@ -189,7 +202,8 @@ class InsumerAPIWrapper(BaseModel):
 
         Args:
             wallets: List of 1-10 dicts, each with ``wallet`` (EVM address,
-                required) and optional ``solanaWallet`` (base58).
+                required), optional ``solanaWallet`` (base58), and optional
+                ``xrplWallet`` (r-address).
             proof: Set to ``"merkle"`` for EIP-1186 Merkle storage proofs.
                 Costs 6 credits per wallet instead of 3.
 
@@ -247,6 +261,7 @@ class InsumerAPIWrapper(BaseModel):
         merchant_id: str,
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
     ) -> dict:
         """Calculate discount for a wallet at a merchant. Free, no credits consumed."""
         params: dict[str, Any] = {"merchant": merchant_id}
@@ -254,6 +269,8 @@ class InsumerAPIWrapper(BaseModel):
             params["wallet"] = wallet
         if solana_wallet:
             params["solanaWallet"] = solana_wallet
+        if xrpl_wallet:
+            params["xrplWallet"] = xrpl_wallet
         return self._get("/discount/check", params)
 
     def verify(
@@ -261,6 +278,7 @@ class InsumerAPIWrapper(BaseModel):
         merchant_id: str,
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
     ) -> dict:
         """Create a signed discount code (INSR-XXXXX), valid 30 minutes. Costs 1 credit."""
         body: dict[str, Any] = {"merchantId": merchant_id}
@@ -268,6 +286,8 @@ class InsumerAPIWrapper(BaseModel):
             body["wallet"] = wallet
         if solana_wallet:
             body["solanaWallet"] = solana_wallet
+        if xrpl_wallet:
+            body["xrplWallet"] = xrpl_wallet
         return self._post("/verify", body)
 
     def buy_credits(
@@ -381,6 +401,7 @@ class InsumerAPIWrapper(BaseModel):
         merchant_id: str,
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
         items: Optional[list] = None,
     ) -> dict:
         """Check discount eligibility in ACP (OpenAI/Stripe Agentic Commerce Protocol) format.
@@ -393,6 +414,7 @@ class InsumerAPIWrapper(BaseModel):
             merchant_id: Merchant identifier.
             wallet: EVM wallet address (0x...).
             solana_wallet: Solana wallet address (base58).
+            xrpl_wallet: XRPL wallet address (r-address).
             items: Optional line items for per-item allocations. Each dict has
                 ``path`` (JSONPath, e.g. '$.line_items[0]') and ``amount`` (cents).
 
@@ -405,6 +427,8 @@ class InsumerAPIWrapper(BaseModel):
             body["wallet"] = wallet
         if solana_wallet:
             body["solanaWallet"] = solana_wallet
+        if xrpl_wallet:
+            body["xrplWallet"] = xrpl_wallet
         if items is not None:
             body["items"] = items
         return self._post("/acp/discount", body)
@@ -414,6 +438,7 @@ class InsumerAPIWrapper(BaseModel):
         merchant_id: str,
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
         items: Optional[list] = None,
     ) -> dict:
         """Check discount eligibility in UCP (Google Universal Commerce Protocol) format.
@@ -426,6 +451,7 @@ class InsumerAPIWrapper(BaseModel):
             merchant_id: Merchant identifier.
             wallet: EVM wallet address (0x...).
             solana_wallet: Solana wallet address (base58).
+            xrpl_wallet: XRPL wallet address (r-address).
             items: Optional line items for per-item allocations. Each dict has
                 ``path`` (JSONPath, e.g. '$.line_items[0]') and ``amount`` (cents).
 
@@ -438,6 +464,8 @@ class InsumerAPIWrapper(BaseModel):
             body["wallet"] = wallet
         if solana_wallet:
             body["solanaWallet"] = solana_wallet
+        if xrpl_wallet:
+            body["xrplWallet"] = xrpl_wallet
         if items is not None:
             body["items"] = items
         return self._post("/ucp/discount", body)

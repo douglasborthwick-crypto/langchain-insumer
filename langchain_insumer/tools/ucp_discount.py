@@ -22,6 +22,10 @@ class UcpDiscountSchema(BaseModel):
         default=None,
         description="Solana wallet address (base58).",
     )
+    xrpl_wallet: Optional[str] = Field(
+        default=None,
+        description="XRPL wallet address (r-address).",
+    )
     items: Optional[list] = Field(
         default=None,
         description=(
@@ -58,6 +62,7 @@ class InsumerUcpDiscountTool(BaseTool):
         merchant_id: str,
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
         items: Optional[list] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
@@ -66,6 +71,7 @@ class InsumerUcpDiscountTool(BaseTool):
             merchant_id=merchant_id,
             wallet=wallet,
             solana_wallet=solana_wallet,
+            xrpl_wallet=xrpl_wallet,
             items=items,
         )
         return json.dumps(result, indent=2)

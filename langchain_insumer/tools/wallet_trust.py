@@ -20,6 +20,10 @@ class WalletTrustSchema(BaseModel):
         default=None,
         description="Solana wallet address (base58). If provided, adds USDC on Solana check.",
     )
+    xrpl_wallet: Optional[str] = Field(
+        default=None,
+        description="XRPL wallet address (r-address). If provided, adds RLUSD and USDC on XRPL checks.",
+    )
     proof: Optional[str] = Field(
         default=None,
         description=(
@@ -42,14 +46,15 @@ class InsumerWalletTrustTool(BaseTool):
 
     name: str = "insumer_wallet_trust"
     description: str = (
-        "Generate a wallet trust fact profile. 17 curated checks across "
+        "Generate a wallet trust fact profile. 17 base checks across "
         "stablecoins (USDC on 7 chains), governance tokens (UNI, AAVE, ARB, "
         "OP), NFTs (BAYC, Pudgy Penguins, Wrapped CryptoPunks), and staking "
-        "positions (stETH, rETH, cbETH). Returns per-dimension pass/fail "
-        "counts and ECDSA-signed evidence — no score, just facts. Use this "
-        "when you need a comprehensive wallet assessment without specifying "
-        'individual conditions. Costs 3 credits (standard) or 6 credits '
-        '(proof="merkle").'
+        "positions (stETH, rETH, cbETH). Up to 20 checks with optional Solana "
+        "and XRPL wallets (adds USDC on Solana, RLUSD and USDC on XRPL). "
+        "Returns per-dimension pass/fail counts and ECDSA-signed evidence — no "
+        "score, just facts. Use this when you need a comprehensive wallet "
+        'assessment without specifying individual conditions. Costs 3 credits '
+        '(standard) or 6 credits (proof="merkle").'
     )
     args_schema: Type[WalletTrustSchema] = WalletTrustSchema
 
@@ -62,6 +67,7 @@ class InsumerWalletTrustTool(BaseTool):
         self,
         wallet: str,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
         proof: Optional[str] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
@@ -69,6 +75,7 @@ class InsumerWalletTrustTool(BaseTool):
         result = self.api_wrapper.wallet_trust(
             wallet=wallet,
             solana_wallet=solana_wallet,
+            xrpl_wallet=xrpl_wallet,
             proof=proof,
         )
         return json.dumps(result, indent=2)

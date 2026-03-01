@@ -16,7 +16,8 @@ class BatchWalletTrustSchema(BaseModel):
     wallets: list[dict] = Field(
         description=(
             "List of 1-10 wallet objects. Each must have 'wallet' (EVM address). "
-            "Optional 'solanaWallet' (base58) adds Solana USDC check for that wallet."
+            "Optional 'solanaWallet' (base58) adds Solana USDC check. "
+            "Optional 'xrplWallet' (r-address) adds RLUSD and USDC on XRPL checks."
         ),
     )
     proof: Optional[str] = Field(

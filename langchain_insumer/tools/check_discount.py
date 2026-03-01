@@ -22,6 +22,10 @@ class CheckDiscountSchema(BaseModel):
         default=None,
         description="Solana wallet address (base58).",
     )
+    xrpl_wallet: Optional[str] = Field(
+        default=None,
+        description="XRPL wallet address (r-address).",
+    )
 
 
 class InsumerCheckDiscountTool(BaseTool):
@@ -50,6 +54,7 @@ class InsumerCheckDiscountTool(BaseTool):
         merchant_id: str,
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Check the discount."""
@@ -57,5 +62,6 @@ class InsumerCheckDiscountTool(BaseTool):
             merchant_id=merchant_id,
             wallet=wallet,
             solana_wallet=solana_wallet,
+            xrpl_wallet=xrpl_wallet,
         )
         return json.dumps(result, indent=2)

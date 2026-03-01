@@ -21,6 +21,10 @@ class AttestSchema(BaseModel):
         default=None,
         description="Solana wallet address (base58) to verify.",
     )
+    xrpl_wallet: Optional[str] = Field(
+        default=None,
+        description="XRPL wallet address (r-address). For verifying XRP, trust line tokens (RLUSD, USDC), or NFTs on XRP Ledger.",
+    )
     proof: Optional[str] = Field(
         default=None,
         description=(
@@ -60,7 +64,7 @@ class InsumerAttestTool(BaseTool):
     name: str = "insumer_attest"
     description: str = (
         "Verify on-chain conditions (token balances, NFT ownership, EAS attestations, "
-        "Farcaster identity) across 31 blockchains. Returns a cryptographically signed "
+        "Farcaster identity) across 32 blockchains. Returns a cryptographically signed "
         "true/false verification without exposing actual wallet balances. Use this when "
         "you need to check if a wallet holds a specific token or NFT, has an EAS "
         "attestation (Coinbase Verifications, Gitcoin Passport), or is registered on "
@@ -80,6 +84,7 @@ class InsumerAttestTool(BaseTool):
         conditions: str,
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
+        xrpl_wallet: Optional[str] = None,
         proof: Optional[str] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
@@ -89,6 +94,7 @@ class InsumerAttestTool(BaseTool):
             conditions=parsed_conditions,
             wallet=wallet,
             solana_wallet=solana_wallet,
+            xrpl_wallet=xrpl_wallet,
             proof=proof,
         )
         return json.dumps(result, indent=2)
