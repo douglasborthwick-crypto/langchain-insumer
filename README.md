@@ -85,6 +85,45 @@ print(f"Key ID: {result['data']['kid']}")
 
 No balances. No amounts. Just a signed true/false per condition.
 
+### XRPL Verification
+
+```python
+# Verify native XRP balance
+result = api.attest(
+    xrpl_wallet="rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn",
+    conditions=[
+        {
+            "type": "token_balance",
+            "contractAddress": "native",
+            "chainId": "xrpl",
+            "threshold": 100,
+            "label": "XRP >= 100",
+        }
+    ],
+)
+
+# Verify RLUSD trust line token
+result = api.attest(
+    xrpl_wallet="rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn",
+    conditions=[
+        {
+            "type": "token_balance",
+            "contractAddress": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+            "chainId": "xrpl",
+            "currency": "RLUSD",
+            "threshold": 10,
+            "label": "RLUSD >= 10 on XRPL",
+        }
+    ],
+)
+
+# Wallet trust profile with XRPL dimensions
+result = api.wallet_trust(
+    wallet="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    xrpl_wallet="rG1QQv2nh2gr7RCZ1P8YYcBUKCCN633jCn",
+)
+```
+
 ## Verify the Response
 
 The attestation is ECDSA-signed. Your application should verify it before trusting it. Use [insumer-verify](https://www.npmjs.com/package/insumer-verify) in your Node.js backend or browser:
@@ -144,8 +183,8 @@ print(result["output"])
 |------|-------------|---------|
 | `InsumerAttestTool` | Verify on-chain conditions (token balances, NFT ownership, EAS attestations, Farcaster identity). Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
 | `InsumerComplianceTemplatesTool` | List available EAS compliance templates (Coinbase Verifications on Base, Gitcoin Passport on Optimism). | Free |
-| `InsumerWalletTrustTool` | Generate wallet trust fact profile (17 checks, 4 dimensions). | 3/call (6 with merkle) |
-| `InsumerBatchWalletTrustTool` | Batch trust profiles for up to 10 wallets. 5-8x faster. | 3/wallet (6 with merkle) |
+| `InsumerWalletTrustTool` | Generate wallet trust fact profile (17 base checks, 4 dimensions; up to 20 with optional Solana + XRPL). | 3/call (6 with merkle) |
+| `InsumerBatchWalletTrustTool` | Batch trust profiles for up to 10 wallets. 5-8x faster. Each wallet can include optional `solanaWallet` and `xrplWallet`. | 3/wallet (6 with merkle) |
 | `InsumerVerifyTool` | Create signed discount code (INSR-XXXXX), valid 30 min. | 1/call |
 | `InsumerConfirmPaymentTool` | Confirm USDC payment for a discount code. | Free |
 | `InsumerJwksTool` | Get ECDSA P-256 public signing key (JWKS). | Free |
