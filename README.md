@@ -4,6 +4,8 @@ LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- on-cha
 
 **In production:** [DJD Agent Score](https://github.com/jacobsd32-cpu/djdagentscore) (Coinbase x402 ecosystem) uses InsumerAPI for AI agent wallet trust scoring. [Case study](https://insumermodel.com/blog/djd-agent-score-insumer-api-integration.html).
 
+**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 32 chains, trust profiles, commerce protocols, and signature verification.
+
 Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (25 tools, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
 
 ## Install
