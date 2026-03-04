@@ -130,16 +130,16 @@ class InsumerAPIWrapper(BaseModel):
             proof: Set to "merkle" for EIP-1186 Merkle storage proofs.
                 Available for token_balance conditions on RPC chains only.
                 Costs 2 credits. Reveals raw balance to the caller.
-            format: Set to "jwt" to include an ES256 JWT bearer token in the
-                response. Verifiable by any standard JWT library using the JWKS
-                at /.well-known/jwks.json. No additional cost.
+            format: Set to "jwt" to include a Wallet Auth by InsumerAPI token
+                (ES256-signed JWT) in the response. Verifiable by any standard
+                JWT library using JWKS at /.well-known/jwks.json. No additional cost.
 
         Returns:
             API response with verification results, ECDSA signature (``sig``),
             and key ID (``kid``) identifying the signing key. Fetch the public
             key via ``get_jwks()`` to verify signatures.
-            When format="jwt", response includes a ``jwt`` field with a signed
-            ES256 JWT bearer token.
+            When format="jwt", response includes a ``jwt`` field with a
+            Wallet Auth by InsumerAPI token (ES256-signed JWT).
             When proof="merkle", each result includes a proof object with
             accountProof, storageProof, storageHash, blockNumber, and
             mappingSlot fields.

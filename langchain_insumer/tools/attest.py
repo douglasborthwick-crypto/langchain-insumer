@@ -37,8 +37,8 @@ class AttestSchema(BaseModel):
     format: Optional[str] = Field(
         default=None,
         description=(
-            'Set to "jwt" to include an ES256 JWT bearer token in the response. '
-            "Verifiable by any standard JWT library using JWKS at "
+            'Set to "jwt" to include a Wallet Auth by InsumerAPI token (ES256-signed JWT) '
+            "in the response. Verifiable by any standard JWT library using JWKS at "
             "/.well-known/jwks.json. No additional cost."
         ),
     )
