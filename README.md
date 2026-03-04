@@ -100,6 +100,22 @@ print(f"Key ID: {result['data']['kid']}")
 
 No balances. No amounts. Just a signed true/false per condition.
 
+### Wallet Auth (JWT)
+
+Add `format="jwt"` to receive the attestation as a standard JWT bearer token:
+
+```python
+result = api.attest(
+    wallet="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    conditions=[...],
+    format="jwt"
+)
+
+print(result["data"]["jwt"])  # ES256-signed JWT
+```
+
+The response includes an additional `jwt` field. This token is verifiable by any standard JWT library via the JWKS endpoint at `GET /v1/jwks` — compatible with Kong, Nginx, Cloudflare Access, AWS API Gateway, and other JWT middleware.
+
 ### XRPL Verification
 
 ```python
