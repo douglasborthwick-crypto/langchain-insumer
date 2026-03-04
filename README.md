@@ -8,11 +8,24 @@ LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- on-cha
 
 Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (25 tools, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
 
+**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 32 chains, trust profiles, commerce protocols, and signature verification.
+
 ## Install
 
 ```bash
 pip install langchain-insumer
 ```
+
+## Get an API Key
+
+```bash
+curl -X POST \
+  https://us-central1-insumer-merchant.cloudfunctions.net/createDeveloperApiKey \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@example.com", "appName": "my-agent", "tier": "free"}'
+```
+
+Returns an `insr_live_...` key instantly with 10 verification credits. Or get one at [insumermodel.com/developers](https://insumermodel.com/developers/#pricing).
 
 ## Quick Start
 
@@ -361,12 +374,6 @@ for r in result["data"]["attestation"]["results"]:
 ## Supported Chains (32)
 
 Ethereum, BNB Chain, Base, Avalanche, Polygon, Arbitrum, Optimism, Solana, XRPL (XRP Ledger), Chiliz, Soneium, Plume, Sonic, Gnosis, Mantle, Scroll, Linea, zkSync Era, Blast, Taiko, Ronin, Celo, Moonbeam, Moonriver, Viction, opBNB, World Chain, Unichain, Ink, Sei, Berachain, ApeChain.
-
-## Get an API Key
-
-- **Free** (10 credits): [insumermodel.com/developers](https://insumermodel.com/developers/)
-- **Pro** (10,000/day): 29 USDC/month
-- **Enterprise** (100,000/day): 99 USDC/month
 
 ## Links
 
