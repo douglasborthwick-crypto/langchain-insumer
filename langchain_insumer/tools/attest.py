@@ -34,6 +34,14 @@ class AttestSchema(BaseModel):
             "Costs 2 credits instead of 1. Reveals raw balance to caller."
         ),
     )
+    format: Optional[str] = Field(
+        default=None,
+        description=(
+            'Set to "jwt" to include an ES256 JWT bearer token in the response. '
+            "Verifiable by any standard JWT library using JWKS at "
+            "/.well-known/jwks.json. No additional cost."
+        ),
+    )
     conditions: str = Field(
         description=(
             'JSON array of conditions. Each condition: {"type": "token_balance" or '
@@ -86,6 +94,7 @@ class InsumerAttestTool(BaseTool):
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
         proof: Optional[str] = None,
+        format: Optional[str] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Execute the on-chain verification."""
@@ -96,5 +105,6 @@ class InsumerAttestTool(BaseTool):
             solana_wallet=solana_wallet,
             xrpl_wallet=xrpl_wallet,
             proof=proof,
+            format=format,
         )
         return json.dumps(result, indent=2)
