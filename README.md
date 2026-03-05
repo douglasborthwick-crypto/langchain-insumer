@@ -4,9 +4,7 @@ LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- on-cha
 
 **In production:** [DJD Agent Score](https://github.com/jacobsd32-cpu/djdagentscore) (Coinbase x402 ecosystem) uses InsumerAPI for AI agent wallet trust scoring. [Case study](https://insumermodel.com/blog/djd-agent-score-insumer-api-integration.html).
 
-**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 32 chains, trust profiles, commerce protocols, and signature verification.
-
-Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (25 tools, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
+Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (26 tools, npm) | [ElizaOS](https://www.npmjs.com/package/eliza-plugin-insumer) (3 actions, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
 
 **[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 32 chains, trust profiles, commerce protocols, and signature verification.
 
@@ -94,7 +92,7 @@ print(f"Key ID: {result['data']['kid']}")
     "sig": "MEUCIQD...(base64 ECDSA signature)...",
     "kid": "insumer-attest-v1"
   },
-  "meta": { "version": "1.0", "creditsCharged": 1, "creditsRemaining": 99 }
+  "meta": { "version": "1.0", "timestamp": "2026-02-28T12:34:57.000Z", "creditsCharged": 1, "creditsRemaining": 99 }
 }
 ```
 
