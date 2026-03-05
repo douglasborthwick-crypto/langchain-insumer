@@ -53,6 +53,7 @@ class TestInsumerAPIWrapper:
                     "failCount": 0,
                 },
                 "sig": "base64sig...",
+                "kid": "insumer-attest-v1",
             },
             "meta": {"creditsRemaining": 9},
         }
