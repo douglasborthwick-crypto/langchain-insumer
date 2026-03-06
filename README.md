@@ -387,7 +387,17 @@ for r in result["data"]["attestation"]["results"]:
 
 ## Supported Chains (32)
 
-Ethereum, BNB Chain, Base, Avalanche, Polygon, Arbitrum, Optimism, Solana, XRPL (XRP Ledger), Chiliz, Soneium, Plume, Sonic, Gnosis, Mantle, Scroll, Linea, zkSync Era, Blast, Taiko, Ronin, Celo, Moonbeam, Moonriver, Viction, opBNB, World Chain, Unichain, Ink, Sei, Berachain, ApeChain.
+**26 direct-RPC chains:** Ethereum, BNB Chain, Base, Avalanche, Polygon, Arbitrum, Optimism, Chiliz, Soneium, Plume, World Chain, Sonic, Gnosis, Mantle, Scroll, Linea, ZKsync, Blast, Celo, Moonbeam, opBNB, Unichain, Ink, Sei, Berachain, ApeChain
+
+**4 Covalent chains:** Taiko, Ronin, Moonriver, Viction
+
+**Non-EVM:** Solana, XRPL (XRP Ledger — native XRP, trust line tokens, NFTs)
+
+## Get an API Key
+
+- **Free** (10 credits): [insumermodel.com/developers](https://insumermodel.com/developers/)
+- **Pro** (10,000/day): 29 USDC/month
+- **Enterprise** (100,000/day): 99 USDC/month
 
 ## Links
 
