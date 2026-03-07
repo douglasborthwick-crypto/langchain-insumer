@@ -164,7 +164,8 @@ npm install insumer-verify
 ```typescript
 import { verifyAttestation } from "insumer-verify";
 
-// attestationResponse = the JSON returned by api.attest()
+// attestationResponse = the full API envelope {ok, data: {attestation, sig, kid}, meta}
+// Do NOT pass attestationResponse.data — the function expects the outer envelope
 const result = await verifyAttestation(attestationResponse, {
   jwksUrl: "https://insumermodel.com/.well-known/jwks.json",
   maxAge: 120,
@@ -383,6 +384,19 @@ for r in result["data"]["attestation"]["results"]:
         print(f"Proof nodes: {len(proof['accountProof'])} account, {len(proof['storageProof'])} storage")
     else:
         print(f"Proof unavailable: {proof.get('reason')}")
+```
+
+## Handling `rpc_failure` Errors
+
+If the API cannot reach one or more data sources (RPC nodes, Helius, XRPL, Covalent) after retries, endpoints that produce signed attestations (`create_attestation`, `wallet_trust`, `batch_wallet_trust`) return `ok: false` with error code `rpc_failure`. No signature, no JWT, no credits charged. This is a retryable error — retry after 2-5 seconds.
+
+**Important:** `rpc_failure` is NOT a verification failure. Do not treat it as `pass: false`. It means the data source was temporarily unavailable and the API refused to sign an unverified result.
+
+```python
+result = api.attest(wallet="0x...", conditions=[...])
+if not result.get("ok") and result.get("error", {}).get("code") == "rpc_failure":
+    # Retryable — wait and retry
+    print("RPC failure:", result["error"]["failedConditions"])
 ```
 
 ## Supported Chains (32)
