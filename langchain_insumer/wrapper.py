@@ -138,6 +138,10 @@ class InsumerAPIWrapper(BaseModel):
             API response with verification results, ECDSA signature (``sig``),
             and key ID (``kid``) identifying the signing key. Fetch the public
             key via ``get_jwks()`` to verify signatures.
+            Each result includes ``blockNumber`` and ``blockTimestamp`` (EVM)
+            or ``ledgerIndex`` and ``ledgerHash`` (XRPL). XRPL trust line
+            token results also include ``trustLineState: { frozen: bool }``
+            — a frozen trust line causes ``met: false`` regardless of balance.
             When format="jwt", response includes a ``jwt`` field with a
             Wallet Auth by InsumerAPI token (ES256-signed JWT).
             When proof="merkle", each result includes a proof object with

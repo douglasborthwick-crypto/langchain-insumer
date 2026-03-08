@@ -153,6 +153,8 @@ result = api.wallet_trust(
 )
 ```
 
+XRPL attestation results include `ledgerIndex` and `ledgerHash` (validated ledger hash) instead of `blockNumber`/`blockTimestamp`. Trust line token results also include `trustLineState: { frozen: bool }` — a frozen trust line causes `met: false` regardless of balance. Native XRP results include `ledgerHash` but not `trustLineState`.
+
 ## Verify the Response
 
 The attestation is ECDSA-signed. Your application should verify it before trusting it. Use [insumer-verify](https://www.npmjs.com/package/insumer-verify) in your Node.js backend or browser:
