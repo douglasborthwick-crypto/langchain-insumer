@@ -409,9 +409,19 @@ if not result.get("ok") and result.get("error", {}).get("code") == "rpc_failure"
 
 ## Get an API Key
 
-- **Free** (10 credits): [insumermodel.com/developers](https://insumermodel.com/developers/)
-- **Pro** (10,000/day): 29 USDC/month
-- **Enterprise** (100,000/day): 99 USDC/month
+Generate one from your terminal — no browser needed:
+
+```bash
+curl -s -X POST https://us-central1-insumer-merchant.cloudfunctions.net/createDeveloperApiKey \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@example.com", "appName": "LangChain Agent", "tier": "free"}' | jq .
+```
+
+Returns an `insr_live_...` key with 10 credits and 100 calls/day. One free key per email.
+
+Or get one at [insumermodel.com/developers](https://insumermodel.com/developers/).
+
+**Tiers:** Free (10 credits) | Pro $29/mo (10,000/day) | Enterprise $99/mo (100,000/day)
 
 ## Links
 
