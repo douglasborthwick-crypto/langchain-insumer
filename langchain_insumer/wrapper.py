@@ -240,17 +240,28 @@ class InsumerAPIWrapper(BaseModel):
         limit: int = 50,
         offset: int = 0,
     ) -> dict:
-        """List merchants in the public directory."""
+        """List merchants in the public directory. No authentication required."""
         params: dict[str, Any] = {"limit": limit, "offset": offset}
         if token:
             params["token"] = token
         if verified is not None:
             params["verified"] = str(verified).lower()
-        return self._get("/merchants", params)
+        resp = requests.get(
+            f"{BASE_URL}/merchants",
+            params=params,
+            timeout=self.timeout,
+        )
+        resp.raise_for_status()
+        return resp.json()
 
     def get_merchant(self, merchant_id: str) -> dict:
-        """Get full public merchant profile with tier structures."""
-        return self._get(f"/merchants/{merchant_id}")
+        """Get full public merchant profile with tier structures. No authentication required."""
+        resp = requests.get(
+            f"{BASE_URL}/merchants/{merchant_id}",
+            timeout=self.timeout,
+        )
+        resp.raise_for_status()
+        return resp.json()
 
     def list_tokens(
         self,
@@ -258,7 +269,7 @@ class InsumerAPIWrapper(BaseModel):
         symbol: Optional[str] = None,
         asset_type: Optional[str] = None,
     ) -> dict:
-        """List registered tokens and NFT collections."""
+        """List registered tokens and NFT collections. No authentication required."""
         params: dict[str, Any] = {}
         if chain is not None:
             params["chain"] = chain
@@ -266,7 +277,13 @@ class InsumerAPIWrapper(BaseModel):
             params["symbol"] = symbol
         if asset_type:
             params["type"] = asset_type
-        return self._get("/tokens", params)
+        resp = requests.get(
+            f"{BASE_URL}/tokens",
+            params=params,
+            timeout=self.timeout,
+        )
+        resp.raise_for_status()
+        return resp.json()
 
     def check_discount(
         self,
@@ -275,7 +292,7 @@ class InsumerAPIWrapper(BaseModel):
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
     ) -> dict:
-        """Calculate discount for a wallet at a merchant. Free, no credits consumed."""
+        """Calculate discount for a wallet at a merchant. No authentication required. Free, no credits consumed."""
         params: dict[str, Any] = {"merchant": merchant_id}
         if wallet:
             params["wallet"] = wallet
@@ -283,7 +300,13 @@ class InsumerAPIWrapper(BaseModel):
             params["solanaWallet"] = solana_wallet
         if xrpl_wallet:
             params["xrplWallet"] = xrpl_wallet
-        return self._get("/discount/check", params)
+        resp = requests.get(
+            f"{BASE_URL}/discount/check",
+            params=params,
+            timeout=self.timeout,
+        )
+        resp.raise_for_status()
+        return resp.json()
 
     def verify(
         self,
