@@ -40,6 +40,16 @@ class InsumerAPIWrapper(BaseModel):
         resp.raise_for_status()
         return resp.json()
 
+    def _public_post(self, path: str, json_body: Optional[dict] = None) -> dict:
+        resp = requests.post(
+            f"{BASE_URL}{path}",
+            headers={"Content-Type": "application/json"},
+            json=json_body or {},
+            timeout=self.timeout,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
     def _post(self, path: str, json_body: Optional[dict] = None) -> dict:
         resp = requests.post(
             f"{BASE_URL}{path}",
@@ -324,6 +334,21 @@ class InsumerAPIWrapper(BaseModel):
         if xrpl_wallet:
             body["xrplWallet"] = xrpl_wallet
         return self._post("/verify", body)
+
+    def buy_key(
+        self,
+        tx_hash: str,
+        chain_id: Any,
+        amount: float,
+        app_name: str,
+    ) -> dict:
+        """Buy a new API key with USDC (no auth required). Wallet becomes the key identity."""
+        return self._public_post("/keys/buy", {
+            "txHash": tx_hash,
+            "chainId": chain_id,
+            "amount": amount,
+            "appName": app_name,
+        })
 
     def buy_credits(
         self,

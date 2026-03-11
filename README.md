@@ -234,6 +234,7 @@ print(result["output"])
 
 | Tool | Description | Credits |
 |------|-------------|---------|
+| `InsumerBuyKeyTool` | Buy a new API key with USDC (no auth required). Wallet becomes identity. | -- |
 | `InsumerCreditsTool` | Check API key credit balance and tier. | Free |
 | `InsumerBuyCreditsTool` | Buy API key credits with USDC (25 credits/$1). | -- |
 | `InsumerBuyMerchantCreditsTool` | Buy merchant credits with USDC (25 credits/$1). | -- |

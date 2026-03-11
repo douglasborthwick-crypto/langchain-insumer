@@ -5,6 +5,7 @@ from langchain_insumer.tools.attest import InsumerAttestTool
 from langchain_insumer.tools.batch_wallet_trust import InsumerBatchWalletTrustTool
 from langchain_insumer.tools.compliance_templates import InsumerComplianceTemplatesTool
 from langchain_insumer.tools.buy_credits import InsumerBuyCreditsTool
+from langchain_insumer.tools.buy_key import InsumerBuyKeyTool
 from langchain_insumer.tools.buy_merchant_credits import InsumerBuyMerchantCreditsTool
 from langchain_insumer.tools.check_discount import InsumerCheckDiscountTool
 from langchain_insumer.tools.configure_nfts import InsumerConfigureNftsTool
@@ -32,6 +33,7 @@ __all__ = [
     "InsumerBatchWalletTrustTool",
     "InsumerComplianceTemplatesTool",
     "InsumerBuyCreditsTool",
+    "InsumerBuyKeyTool",
     "InsumerBuyMerchantCreditsTool",
     "InsumerCheckDiscountTool",
     "InsumerConfigureNftsTool",
