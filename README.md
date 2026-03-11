@@ -391,7 +391,7 @@ for r in result["data"]["attestation"]["results"]:
 
 ## Handling `rpc_failure` Errors
 
-If the API cannot reach one or more data sources (RPC nodes, Helius, XRPL, Covalent) after retries, endpoints that produce signed attestations (`create_attestation`, `wallet_trust`, `batch_wallet_trust`) return `ok: false` with error code `rpc_failure`. No signature, no JWT, no credits charged. This is a retryable error — retry after 2-5 seconds.
+If the API cannot reach one or more blockchain data sources after retries, endpoints that produce signed attestations (`create_attestation`, `wallet_trust`, `batch_wallet_trust`) return `ok: false` with error code `rpc_failure`. No signature, no JWT, no credits charged. This is a retryable error — retry after 2-5 seconds.
 
 **Important:** `rpc_failure` is NOT a verification failure. Do not treat it as `pass: false`. It means the data source was temporarily unavailable and the API refused to sign an unverified result.
 
@@ -404,11 +404,7 @@ if not result.get("ok") and result.get("error", {}).get("code") == "rpc_failure"
 
 ## Supported Chains (32)
 
-**26 direct-RPC chains:** Ethereum, BNB Chain, Base, Avalanche, Polygon, Arbitrum, Optimism, Chiliz, Soneium, Plume, World Chain, Sonic, Gnosis, Mantle, Scroll, Linea, ZKsync, Blast, Celo, Moonbeam, opBNB, Unichain, Ink, Sei, Berachain, ApeChain
-
-**4 Covalent chains:** Taiko, Ronin, Moonriver, Viction
-
-**Non-EVM:** Solana, XRPL (XRP Ledger — native XRP, trust line tokens, NFTs)
+30 EVM chains + Solana + XRP Ledger. Includes Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, and 23 more. [Full list →](https://insumermodel.com/developers/api-reference/)
 
 ## Get an API Key
 
