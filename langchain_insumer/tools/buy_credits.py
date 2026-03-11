@@ -25,6 +25,10 @@ class BuyCreditsSchema(BaseModel):
         description="USDC amount sent. Minimum 5.",
         ge=5,
     )
+    update_wallet: bool = Field(
+        default=False,
+        description="Set true to update the registered sender wallet to this transaction's sender.",
+    )
 
 
 class InsumerBuyCreditsTool(BaseTool):
@@ -52,6 +56,7 @@ class InsumerBuyCreditsTool(BaseTool):
         tx_hash: str,
         chain_id: Any,
         amount: float,
+        update_wallet: bool = False,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
         """Buy credits."""
@@ -59,5 +64,6 @@ class InsumerBuyCreditsTool(BaseTool):
             tx_hash=tx_hash,
             chain_id=chain_id,
             amount=amount,
+            update_wallet=update_wallet,
         )
         return json.dumps(result, indent=2)

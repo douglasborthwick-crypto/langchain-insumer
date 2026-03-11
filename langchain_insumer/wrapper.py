@@ -355,13 +355,17 @@ class InsumerAPIWrapper(BaseModel):
         tx_hash: str,
         chain_id: Any,
         amount: float,
+        update_wallet: bool = False,
     ) -> dict:
         """Buy verification credits with USDC. Rate: 25 credits per 1 USDC. Minimum 5 USDC."""
-        return self._post("/credits/buy", {
+        body: dict = {
             "txHash": tx_hash,
             "chainId": chain_id,
             "amount": amount,
-        })
+        }
+        if update_wallet:
+            body["updateWallet"] = True
+        return self._post("/credits/buy", body)
 
     def confirm_payment(
         self,
@@ -448,13 +452,17 @@ class InsumerAPIWrapper(BaseModel):
         tx_hash: str,
         chain_id: Any,
         amount: float,
+        update_wallet: bool = False,
     ) -> dict:
         """Buy merchant verification credits with USDC. Rate: 25 credits per 1 USDC. Min 5 USDC. Owner only."""
-        return self._post(f"/merchants/{merchant_id}/credits", {
+        body: dict = {
             "txHash": tx_hash,
             "chainId": chain_id,
             "amount": amount,
-        })
+        }
+        if update_wallet:
+            body["updateWallet"] = True
+        return self._post(f"/merchants/{merchant_id}/credits", body)
 
     def acp_discount(
         self,
