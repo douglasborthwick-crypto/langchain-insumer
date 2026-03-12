@@ -383,7 +383,7 @@ for r in result["data"]["attestation"]["results"]:
     proof = r.get("proof", {})
     if proof.get("available"):
         print(f"Block: {proof['blockNumber']}")
-        print(f"Storage slot: {proof['mappingSlot']}")
+        print(f"Mapping slot: {proof['mappingSlot']}")
         print(f"Proof nodes: {len(proof['accountProof'])} account, {len(proof['storageProof'])} storage")
     else:
         print(f"Proof unavailable: {proof.get('reason')}")
