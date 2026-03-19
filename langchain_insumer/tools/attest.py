@@ -29,8 +29,7 @@ class AttestSchema(BaseModel):
         default=None,
         description=(
             'Set to "merkle" to include EIP-1186 Merkle storage proofs in results. '
-            "Proofs available for token_balance conditions on RPC chains "
-            "(1, 56, 8453, 43114, 137, 42161, 10, 88888, 1868, 98866, 480). "
+            "Proofs available for token_balance conditions on 26 of 30 EVM chains. "
             "Costs 2 credits instead of 1. Reveals raw balance to caller."
         ),
     )
@@ -52,6 +51,7 @@ class AttestSchema(BaseModel):
             '"gitcoin_passport_active") instead of contractAddress, '
             'or specify raw "schemaId", "attester", "indexer", "chainId". '
             'For farcaster_id: no extra fields needed (checks IdRegistry on Optimism). '
+            "taxon: XRPL NFToken taxon filter (integer, optional). "
             "Supported chains: Ethereum (1), BNB (56), Base (8453), Polygon (137), "
             "Arbitrum (42161), Optimism (10), Avalanche (43114), World Chain (480), "
             "Solana (\"solana\"), and 22 more. Max 10 conditions per call."

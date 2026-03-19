@@ -125,8 +125,9 @@ class InsumerAPIWrapper(BaseModel):
                   For XRPL: use r-address issuer for trust line tokens, or "native" for XRP.
                 - chainId: EVM chain ID (int), "solana", or "xrpl"
                 - threshold: Min balance (for token_balance)
-                - decimals: Token decimals (default 18)
+                - decimals: Token decimals (auto-detected if omitted)
                 - label: Human-readable label
+                - taxon: XRPL NFToken taxon filter (integer, optional)
                 - currency: XRPL trust line currency code (e.g. "USD" for RLUSD)
                 - template: Compliance template name (for eas_attestation, e.g.
                   "coinbase_verified_account", "gitcoin_passport_score", "gitcoin_passport_active")

@@ -46,7 +46,7 @@ class TestInsumerAPIWrapper:
             "ok": True,
             "data": {
                 "attestation": {
-                    "id": "ATST-A7C3E",
+                    "id": "ATST-A7C3E1B2D4F56789",
                     "pass": True,
                     "results": [{"condition": 0, "met": True}],
                     "passCount": 1,
@@ -83,7 +83,7 @@ class TestInsumerAPIWrapper:
             "ok": True,
             "data": {
                 "attestation": {
-                    "id": "ATST-A7C3E",
+                    "id": "ATST-A7C3E1B2D4F56789",
                     "pass": True,
                     "results": [{"condition": 0, "met": True}],
                     "passCount": 1,
@@ -115,7 +115,7 @@ class TestInsumerAPIWrapper:
             "ok": True,
             "data": {
                 "attestation": {
-                    "id": "ATST-B8D4F",
+                    "id": "ATST-B8D4F6A7E9C01234",
                     "pass": True,
                     "results": [{"condition": 0, "met": True}],
                     "passCount": 1,
