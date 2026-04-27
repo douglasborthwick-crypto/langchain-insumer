@@ -37,20 +37,21 @@ class WalletTrustSchema(BaseModel):
 class InsumerWalletTrustTool(BaseTool):
     """Generate a structured, ECDSA-signed wallet trust fact profile.
 
-    Checks 17 curated conditions across stablecoins (7 chains), governance
-    tokens (4), NFTs (3), and staking positions (stETH, rETH, cbETH). Returns
-    per-dimension pass/fail counts and overall summary. No score, no opinion —
-    just cryptographically verifiable evidence. Costs 3 credits (standard) or
-    6 credits (with proof="merkle").
+    Checks 36 curated conditions across stablecoins (USDC + USDT on 21 chains),
+    governance tokens (4), NFTs (3), and staking positions (stETH, rETH, cbETH).
+    Up to 40 checks across 24 chains with optional Solana, XRPL, and Bitcoin.
+    Returns per-dimension pass/fail counts and overall summary. No score, no
+    opinion — just cryptographically verifiable evidence. Costs 3 credits
+    (standard) or 6 credits (with proof="merkle").
     """
 
     name: str = "insumer_wallet_trust"
     description: str = (
-        "Generate a wallet trust fact profile. 17 base checks across "
-        "stablecoins (USDC on 7 chains), governance tokens (UNI, AAVE, ARB, "
-        "OP), NFTs (BAYC, Pudgy Penguins, Wrapped CryptoPunks), and staking "
-        "positions (stETH, rETH, cbETH). Up to 20 checks with optional Solana "
-        "and XRPL wallets (adds USDC on Solana, RLUSD and USDC on XRPL). "
+        "Generate a wallet trust fact profile. 36 base checks across "
+        "stablecoins (USDC + USDT on 21 chains), governance tokens (UNI, AAVE, "
+        "ARB, OP), NFTs (BAYC, Pudgy Penguins, Wrapped CryptoPunks), and staking "
+        "positions (stETH, rETH, cbETH). Up to 40 checks across 24 chains with "
+        "optional Solana, XRPL, and Bitcoin wallets. "
         "Returns per-dimension pass/fail counts and ECDSA-signed evidence — no "
         "score, just facts. Use this when you need a comprehensive wallet "
         'assessment without specifying individual conditions. Costs 3 credits '

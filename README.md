@@ -1,12 +1,12 @@
 # langchain-insumer
 
-LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- on-chain verification across 32 blockchains. Returns ECDSA-signed booleans without exposing wallet balances. Up to 10 conditions per request, each with its own chainId. Optional Merkle storage proofs for trustless verification.
+LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- wallet auth across 33 blockchains. Returns ECDSA-signed booleans without exposing wallet balances. Up to 10 conditions per request, each with its own chainId. Optional Merkle storage proofs for trustless verification.
 
 **In production:** [DJD Agent Score](https://github.com/jacobsd32-cpu/djdagentscore) (Coinbase x402 ecosystem) uses InsumerAPI for AI agent wallet trust scoring. [Case study](https://insumermodel.com/blog/djd-agent-score-insumer-api-integration.html).
 
 Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (26 tools, npm) | [ElizaOS](https://www.npmjs.com/package/eliza-plugin-insumer) (10 actions, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
 
-**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 32 chains, trust profiles, commerce protocols, and signature verification.
+**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 33 chains, trust profiles, commerce protocols, and signature verification.
 
 ## Install
 
@@ -79,7 +79,7 @@ print(f"Key ID: {result['data']['kid']}")
             "threshold": 1000,
             "type": "token_balance"
           },
-          "conditionHash": "0x8a3b...",
+          "conditionHash": "0x554251734232c8b43062f1cf2bb51b76650d13268104d74c645f4893e67ef69c",
           "blockNumber": "0x129e3f7",
           "blockTimestamp": "2026-02-28T12:34:56.000Z"
         }
@@ -89,10 +89,10 @@ print(f"Key ID: {result['data']['kid']}")
       "attestedAt": "2026-02-28T12:34:57.000Z",
       "expiresAt": "2026-02-28T13:04:57.000Z"
     },
-    "sig": "MEUCIQD...(base64 ECDSA signature)...",
+    "sig": "dmNJKqnGZ9f47qpWax9gxgw1DhUKHKHrbLspTop8NWzYhv2fNpVAt1gAuhUfU4xPsgXTCdrmTXI4vEE50dcfEA==",
     "kid": "insumer-attest-v1"
   },
-  "meta": { "version": "1.0", "timestamp": "2026-02-28T12:34:57.000Z", "creditsCharged": 1, "creditsRemaining": 99 }
+  "meta": { "version": "1.0", "timestamp": "2026-02-28T12:34:57.000Z", "creditsRemaining": 99, "creditsCharged": 1 }
 }
 ```
 
@@ -215,7 +215,7 @@ print(result["output"])
 |------|-------------|---------|
 | `InsumerAttestTool` | Verify on-chain conditions (token balances, NFT ownership, EAS attestations, Farcaster identity). Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
 | `InsumerComplianceTemplatesTool` | List available EAS compliance templates (Coinbase Verifications on Base, Gitcoin Passport on Optimism). | Free |
-| `InsumerWalletTrustTool` | Generate wallet trust fact profile (17 base checks, 4 dimensions; up to 20 with optional Solana + XRPL). | 3/call (6 with merkle) |
+| `InsumerWalletTrustTool` | Generate wallet trust fact profile (36 base checks, 4 dimensions; up to 40 across 7 dimensions with optional Solana, XRPL, and Bitcoin). | 3/call (6 with merkle) |
 | `InsumerBatchWalletTrustTool` | Batch trust profiles for up to 10 wallets. 5-8x faster. Each wallet can include optional `solanaWallet` and `xrplWallet`. | 3/wallet (6 with merkle) |
 | `InsumerVerifyTool` | Create signed discount code (INSR-XXXXX), valid 30 min. | 1/call |
 | `InsumerConfirmPaymentTool` | Confirm USDC payment for a discount code. | Free |
@@ -234,10 +234,10 @@ print(result["output"])
 
 | Tool | Description | Credits |
 |------|-------------|---------|
-| `InsumerBuyKeyTool` | Buy a new API key with USDC (no auth required). Wallet becomes identity. | -- |
+| `InsumerBuyKeyTool` | Buy a new API key with USDC, USDT, or BTC (no auth required). Wallet becomes identity. | -- |
 | `InsumerCreditsTool` | Check API key credit balance and tier. | Free |
-| `InsumerBuyCreditsTool` | Buy API key credits with USDC (25 credits/$1). | -- |
-| `InsumerBuyMerchantCreditsTool` | Buy merchant credits with USDC (25 credits/$1). | -- |
+| `InsumerBuyCreditsTool` | Buy API key credits with USDC, USDT, or BTC (25 credits/$1). | -- |
+| `InsumerBuyMerchantCreditsTool` | Buy merchant credits with USDC, USDT, or BTC (25 credits/$1). | -- |
 
 ### Merchant Onboarding
 
@@ -274,6 +274,7 @@ from langchain_insumer import (
     InsumerAttestTool,
     InsumerBatchWalletTrustTool,
     InsumerBuyCreditsTool,
+    InsumerBuyKeyTool,
     InsumerBuyMerchantCreditsTool,
     InsumerCheckDiscountTool,
     InsumerComplianceTemplatesTool,
@@ -312,6 +313,7 @@ tools = [
     InsumerListTokensTool(api_wrapper=api),
     InsumerCheckDiscountTool(api_wrapper=api),
     InsumerCreditsTool(api_wrapper=api),
+    InsumerBuyKeyTool(api_wrapper=api),
     InsumerBuyCreditsTool(api_wrapper=api),
     InsumerBuyMerchantCreditsTool(api_wrapper=api),
     InsumerCreateMerchantTool(api_wrapper=api),
@@ -402,9 +404,9 @@ if not result.get("ok") and result.get("error", {}).get("code") == "rpc_failure"
     print("RPC failure:", result["error"]["failedConditions"])
 ```
 
-## Supported Chains (32)
+## Supported Chains (33)
 
-30 EVM chains + Solana + XRP Ledger. Includes Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, and 23 more. [Full list →](https://insumermodel.com/developers/api-reference/)
+30 EVM chains + Solana + XRP Ledger + Bitcoin. Includes Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, and 23 more. [Full list →](https://insumermodel.com/developers/api-reference/)
 
 ## Get an API Key
 
@@ -416,11 +418,11 @@ curl -s -X POST https://api.insumermodel.com/v1/keys/create \
   -d '{"email": "you@example.com", "appName": "LangChain Agent", "tier": "free"}' | jq .
 ```
 
-Returns an `insr_live_...` key with 10 credits and 100 calls/day. One free key per email.
+Returns an `insr_live_...` key with 100 reads/day and 10 verification credits. One free key per email.
 
 Or get one at [insumermodel.com/developers](https://insumermodel.com/developers/).
 
-**Tiers:** Free (10 credits) | Pro $29/mo (10,000/day) | Enterprise $99/mo (100,000/day)
+**Tiers:** Free (100 reads/day, 10 credits) | Pro $9/mo (10,000/day) | Enterprise $29/mo (100,000/day)
 
 ## Links
 

@@ -72,7 +72,7 @@ class InsumerAttestTool(BaseTool):
     name: str = "insumer_attest"
     description: str = (
         "Verify on-chain conditions (token balances, NFT ownership, EAS attestations, "
-        "Farcaster identity) across 32 blockchains. Returns a cryptographically signed "
+        "Farcaster identity) across 33 blockchains. Returns a cryptographically signed "
         "true/false verification without exposing actual wallet balances. Use this when "
         "you need to check if a wallet holds a specific token or NFT, has an EAS "
         "attestation (Coinbase Verifications, Gitcoin Passport), or is registered on "
