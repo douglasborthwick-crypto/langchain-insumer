@@ -1,4 +1,4 @@
-"""Tool for buying a new API key with USDC (no auth required)."""
+"""Tool for buying a new API key with USDC, USDT, or BTC (no auth required)."""
 
 import json
 from typing import Any, Optional, Type
@@ -13,16 +13,16 @@ from langchain_insumer.wrapper import InsumerAPIWrapper
 class BuyKeySchema(BaseModel):
     """Input for InsumerBuyKeyTool."""
 
-    tx_hash: str = Field(description="USDC transaction hash.")
+    tx_hash: str = Field(description="Transaction hash of the USDC, USDT, or BTC payment to the platform wallet.")
     chain_id: Any = Field(
         description=(
-            "Chain where USDC was sent: 1 (Ethereum), 8453 (Base), "
+            "Chain where payment was sent: 1 (Ethereum), 8453 (Base), "
             '137 (Polygon), 42161 (Arbitrum), 10 (Optimism), 56 (BNB), '
-            '43114 (Avalanche), or "solana".'
+            '43114 (Avalanche), "solana", or "bitcoin".'
         ),
     )
     amount: float = Field(
-        description="USDC amount sent. Minimum 5.",
+        description="Stablecoin amount sent (min 5). Not required for BTC — USD value derived from on-chain BTC amount at market rate.",
         ge=5,
     )
     app_name: str = Field(
@@ -32,19 +32,20 @@ class BuyKeySchema(BaseModel):
 
 
 class InsumerBuyKeyTool(BaseTool):
-    """Buy a new API key with USDC. No auth required.
+    """Buy a new API key with USDC, USDT, or BTC. No auth required.
 
-    Agent-friendly: no email needed. Send USDC to the platform wallet,
-    then call this tool with the transaction hash. The sender wallet
-    becomes the key's identity. One key per wallet.
+    Agent-friendly: no email needed. Send USDC, USDT, or BTC to the
+    platform wallet, then call this tool with the transaction hash.
+    The sender wallet becomes the key's identity. One key per wallet.
     """
 
     name: str = "insumer_buy_key"
     description: str = (
-        "Buy a new API key with USDC (no auth required). Agent-friendly: "
-        "no email needed, the sender wallet becomes the key's identity. "
-        "One key per wallet. Volume discounts: $0.04-$0.02/call. "
-        "Supports 7 EVM chains and Solana. Non-refundable."
+        "Buy a new API key with USDC, USDT, or BTC (no auth required). "
+        "Agent-friendly: no email needed, the sender wallet becomes the "
+        "key's identity. One key per wallet. Volume discounts: "
+        "$0.04-$0.02/call. Supports 7 EVM chains, Solana, and Bitcoin. "
+        "Non-refundable."
     )
     args_schema: Type[BuyKeySchema] = BuyKeySchema
 

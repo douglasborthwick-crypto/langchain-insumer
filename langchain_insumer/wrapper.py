@@ -12,7 +12,7 @@ class InsumerAPIWrapper(BaseModel):
     """Wrapper around The Insumer Model API.
 
     Provides privacy-preserving on-chain verification and token-gated commerce
-    across 32 blockchains. Verifies token balances and NFT ownership without
+    across 33 blockchains. Verifies token balances and NFT ownership without
     exposing actual wallet balances.
 
     Args:
@@ -181,9 +181,9 @@ class InsumerAPIWrapper(BaseModel):
     ) -> dict:
         """Generate a structured wallet trust fact profile.
 
-        Checks 17 base conditions across stablecoins (7 chains), governance
-        tokens (4), NFTs (3), and staking positions (stETH, rETH, cbETH).
-        Up to 20 checks with optional Solana and XRPL wallets.
+        Checks 36 base conditions across stablecoins (USDC + USDT on 21 chains),
+        governance tokens (4), NFTs (3), and staking positions (stETH, rETH, cbETH).
+        Up to 40 checks across 24 chains with optional Solana, XRPL, and Bitcoin.
         Returns per-dimension pass/fail counts and an overall summary. No score
         — just cryptographically verifiable evidence. Costs 3 credits (standard)
         or 6 credits (with proof="merkle").
@@ -343,7 +343,7 @@ class InsumerAPIWrapper(BaseModel):
         amount: float,
         app_name: str,
     ) -> dict:
-        """Buy a new API key with USDC (no auth required). Wallet becomes the key identity."""
+        """Buy a new API key with USDC, USDT, or BTC (no auth required). Wallet becomes the key identity."""
         return self._public_post("/keys/buy", {
             "txHash": tx_hash,
             "chainId": chain_id,
@@ -358,7 +358,7 @@ class InsumerAPIWrapper(BaseModel):
         amount: float,
         update_wallet: bool = False,
     ) -> dict:
-        """Buy verification credits with USDC. Rate: 25 credits per 1 USDC. Minimum 5 USDC."""
+        """Buy verification credits with USDC, USDT, or BTC. Rate: 25 credits per $1. Minimum 5."""
         body: dict = {
             "txHash": tx_hash,
             "chainId": chain_id,
@@ -455,7 +455,7 @@ class InsumerAPIWrapper(BaseModel):
         amount: float,
         update_wallet: bool = False,
     ) -> dict:
-        """Buy merchant verification credits with USDC. Rate: 25 credits per 1 USDC. Min 5 USDC. Owner only."""
+        """Buy merchant verification credits with USDC, USDT, or BTC. Rate: 25 credits per $1. Min 5. Owner only."""
         body: dict = {
             "txHash": tx_hash,
             "chainId": chain_id,

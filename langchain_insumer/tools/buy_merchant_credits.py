@@ -1,4 +1,4 @@
-"""Tool for buying merchant-specific verification credits with USDC."""
+"""Tool for buying merchant-specific verification credits with USDC, USDT, or BTC."""
 
 import json
 from typing import Any, Optional, Type
@@ -14,16 +14,16 @@ class BuyMerchantCreditsSchema(BaseModel):
     """Input for InsumerBuyMerchantCreditsTool."""
 
     id: str = Field(description="Merchant ID to buy credits for.")
-    tx_hash: str = Field(description="USDC transaction hash.")
+    tx_hash: str = Field(description="Transaction hash of the USDC, USDT, or BTC payment to the platform wallet.")
     chain_id: Any = Field(
         description=(
-            "Chain where USDC was sent: 1 (Ethereum), 8453 (Base), "
+            "Chain where payment was sent: 1 (Ethereum), 8453 (Base), "
             '137 (Polygon), 42161 (Arbitrum), 10 (Optimism), 56 (BNB), '
-            '43114 (Avalanche), or "solana".'
+            '43114 (Avalanche), "solana", or "bitcoin".'
         ),
     )
     amount: float = Field(
-        description="USDC amount sent. Minimum 5.",
+        description="Stablecoin amount sent (min 5). Not required for BTC — USD value derived from on-chain BTC amount at market rate.",
         ge=5,
     )
     update_wallet: bool = Field(
@@ -33,17 +33,18 @@ class BuyMerchantCreditsSchema(BaseModel):
 
 
 class InsumerBuyMerchantCreditsTool(BaseTool):
-    """Buy verification credits for a specific merchant with USDC. Owner only.
+    """Buy verification credits for a specific merchant with USDC, USDT, or BTC. Owner only.
 
-    Rate: 25 credits per 1 USDC ($0.04/credit). Minimum 5 USDC.
-    Merchant credits are separate from API key credits.
+    Rate: 25 credits per $1 ($0.04/credit). Minimum 5. Merchant credits
+    are separate from API key credits.
     """
 
     name: str = "insumer_buy_merchant_credits"
     description: str = (
         "Buy verification credits for a specific merchant by submitting a "
-        "USDC transaction hash. Rate: 25 credits per 1 USDC. Minimum "
-        "5 USDC. Owner only. Merchant credits are separate from API key credits."
+        "USDC, USDT, or BTC transaction hash. Rate: 25 credits per $1. "
+        "Minimum 5. Owner only. Merchant credits are separate from API "
+        "key credits."
     )
     args_schema: Type[BuyMerchantCreditsSchema] = BuyMerchantCreditsSchema
 

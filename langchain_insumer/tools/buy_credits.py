@@ -1,4 +1,4 @@
-"""Tool for buying verification credits with USDC."""
+"""Tool for buying verification credits with USDC, USDT, or BTC."""
 
 import json
 from typing import Any, Optional, Type
@@ -13,16 +13,16 @@ from langchain_insumer.wrapper import InsumerAPIWrapper
 class BuyCreditsSchema(BaseModel):
     """Input for InsumerBuyCreditsTool."""
 
-    tx_hash: str = Field(description="USDC transaction hash.")
+    tx_hash: str = Field(description="Transaction hash of the USDC, USDT, or BTC payment to the platform wallet.")
     chain_id: Any = Field(
         description=(
-            "Chain where USDC was sent: 1 (Ethereum), 8453 (Base), "
+            "Chain where payment was sent: 1 (Ethereum), 8453 (Base), "
             '137 (Polygon), 42161 (Arbitrum), 10 (Optimism), 56 (BNB), '
-            '43114 (Avalanche), or "solana".'
+            '43114 (Avalanche), "solana", or "bitcoin".'
         ),
     )
     amount: float = Field(
-        description="USDC amount sent. Minimum 5.",
+        description="Stablecoin amount sent (min 5). Not required for BTC — USD value derived from on-chain BTC amount at market rate.",
         ge=5,
     )
     update_wallet: bool = Field(
@@ -32,17 +32,17 @@ class BuyCreditsSchema(BaseModel):
 
 
 class InsumerBuyCreditsTool(BaseTool):
-    """Buy verification credits with USDC.
+    """Buy verification credits with USDC, USDT, or BTC.
 
-    Rate: 25 credits per 1 USDC ($0.04/credit). Minimum purchase: 5 USDC
+    Rate: 25 credits per $1 ($0.04/credit). Minimum purchase: 5
     (125 credits). The server verifies the on-chain transaction receipt.
     """
 
     name: str = "insumer_buy_credits"
     description: str = (
-        "Buy verification credits for the API key by submitting a USDC "
-        "transaction hash. Rate: 25 credits per 1 USDC. Minimum 5 USDC. "
-        "Supports 7 EVM chains and Solana."
+        "Buy verification credits for the API key by submitting a USDC, "
+        "USDT, or BTC transaction hash. Rate: 25 credits per $1. "
+        "Minimum 5. Supports 7 EVM chains, Solana, and Bitcoin."
     )
     args_schema: Type[BuyCreditsSchema] = BuyCreditsSchema
 
