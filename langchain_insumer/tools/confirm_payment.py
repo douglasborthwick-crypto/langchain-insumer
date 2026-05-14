@@ -19,9 +19,9 @@ class ConfirmPaymentSchema(BaseModel):
     tx_hash: str = Field(description="On-chain transaction hash or Solana signature.")
     chain_id: Any = Field(
         description=(
-            "Chain where USDC was sent: 1 (Ethereum), 8453 (Base), "
+            "Chain where USDC/USDT/USDT-TRC20 was sent: 1 (Ethereum), 8453 (Base), "
             '137 (Polygon), 42161 (Arbitrum), 10 (Optimism), 56 (BNB), '
-            '43114 (Avalanche), or "solana".'
+            '43114 (Avalanche), "solana", or "tron".'
         ),
     )
     amount: Any = Field(description="USDC amount sent.")

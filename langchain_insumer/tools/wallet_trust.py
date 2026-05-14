@@ -18,11 +18,27 @@ class WalletTrustSchema(BaseModel):
     )
     solana_wallet: Optional[str] = Field(
         default=None,
-        description="Solana wallet address (base58). If provided, adds USDC on Solana check.",
+        description="Solana wallet address (base58). Adds USDC on Solana and institutional EURCV/USDCV on Solana checks.",
     )
     xrpl_wallet: Optional[str] = Field(
         default=None,
-        description="XRPL wallet address (r-address). If provided, adds RLUSD and USDC on XRPL checks.",
+        description="XRPL wallet address (r-address). Adds RLUSD, USDC, and institutional EURCV on XRPL checks.",
+    )
+    bitcoin_wallet: Optional[str] = Field(
+        default=None,
+        description="Bitcoin address. Adds Bitcoin Holdings dimension (native BTC balance).",
+    )
+    tron_wallet: Optional[str] = Field(
+        default=None,
+        description="Tron wallet address (T-prefixed). Adds USDT-TRC20 on Tron check.",
+    )
+    stellar_wallet: Optional[str] = Field(
+        default=None,
+        description="Stellar wallet address (G-prefixed). Adds institutional USDC and BENJI on Stellar checks (classic trustlines).",
+    )
+    sui_wallet: Optional[str] = Field(
+        default=None,
+        description="Sui wallet address (0x + 64 hex). Adds institutional USDC on Sui check.",
     )
     proof: Optional[str] = Field(
         default=None,
@@ -37,9 +53,10 @@ class WalletTrustSchema(BaseModel):
 class InsumerWalletTrustTool(BaseTool):
     """Generate a structured, ECDSA-signed wallet trust fact profile.
 
-    Checks 36 curated conditions across stablecoins (USDC + USDT on 21 chains),
-    governance tokens (4), NFTs (3), and staking positions (stETH, rETH, cbETH).
-    Up to 40 checks across 24 chains with optional Solana, XRPL, and Bitcoin.
+    Checks 38 curated conditions across stablecoins (USDC + USDT on 21 chains),
+    governance tokens (4), NFTs (3), staking positions (stETH, rETH, cbETH), and
+    institutional stablecoins (EURCV/USDCV on Ethereum). Up to 49 checks across
+    27 chains with optional Solana, XRPL, Bitcoin, Tron, Stellar, and Sui wallets.
     Returns per-dimension pass/fail counts and overall summary. No score, no
     opinion — just cryptographically verifiable evidence. Costs 3 credits
     (standard) or 6 credits (with proof="merkle").
@@ -47,11 +64,12 @@ class InsumerWalletTrustTool(BaseTool):
 
     name: str = "insumer_wallet_trust"
     description: str = (
-        "Generate a wallet trust fact profile. 36 base checks across "
+        "Generate a wallet trust fact profile. 38 base checks across "
         "stablecoins (USDC + USDT on 21 chains), governance tokens (UNI, AAVE, "
-        "ARB, OP), NFTs (BAYC, Pudgy Penguins, Wrapped CryptoPunks), and staking "
-        "positions (stETH, rETH, cbETH). Up to 40 checks across 24 chains with "
-        "optional Solana, XRPL, and Bitcoin wallets. "
+        "ARB, OP), NFTs (BAYC, Pudgy Penguins, Wrapped CryptoPunks), staking "
+        "positions (stETH, rETH, cbETH), and institutional stablecoins. Up to "
+        "49 checks across 27 chains with optional Solana, XRPL, Bitcoin, Tron, "
+        "Stellar, and Sui wallets. "
         "Returns per-dimension pass/fail counts and ECDSA-signed evidence — no "
         "score, just facts. Use this when you need a comprehensive wallet "
         'assessment without specifying individual conditions. Costs 3 credits '
@@ -69,6 +87,10 @@ class InsumerWalletTrustTool(BaseTool):
         wallet: str,
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
+        bitcoin_wallet: Optional[str] = None,
+        tron_wallet: Optional[str] = None,
+        stellar_wallet: Optional[str] = None,
+        sui_wallet: Optional[str] = None,
         proof: Optional[str] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
@@ -77,6 +99,10 @@ class InsumerWalletTrustTool(BaseTool):
             wallet=wallet,
             solana_wallet=solana_wallet,
             xrpl_wallet=xrpl_wallet,
+            bitcoin_wallet=bitcoin_wallet,
+            tron_wallet=tron_wallet,
+            stellar_wallet=stellar_wallet,
+            sui_wallet=sui_wallet,
             proof=proof,
         )
         return json.dumps(result, indent=2)

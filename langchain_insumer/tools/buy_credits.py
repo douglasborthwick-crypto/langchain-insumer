@@ -13,12 +13,12 @@ from langchain_insumer.wrapper import InsumerAPIWrapper
 class BuyCreditsSchema(BaseModel):
     """Input for InsumerBuyCreditsTool."""
 
-    tx_hash: str = Field(description="Transaction hash of the USDC, USDT, or BTC payment to the platform wallet.")
+    tx_hash: str = Field(description="Transaction hash of the USDC, USDT, BTC, or USDT-TRC20 payment to the platform wallet.")
     chain_id: Any = Field(
         description=(
             "Chain where payment was sent: 1 (Ethereum), 8453 (Base), "
             '137 (Polygon), 42161 (Arbitrum), 10 (Optimism), 56 (BNB), '
-            '43114 (Avalanche), "solana", or "bitcoin".'
+            '43114 (Avalanche), "solana", "bitcoin", or "tron" (USDT-TRC20).'
         ),
     )
     amount: float = Field(

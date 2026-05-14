@@ -25,11 +25,27 @@ class AttestSchema(BaseModel):
         default=None,
         description="XRPL wallet address (r-address). For verifying XRP, trust line tokens (RLUSD, USDC), or NFTs on XRP Ledger.",
     )
+    bitcoin_wallet: Optional[str] = Field(
+        default=None,
+        description='Bitcoin address (P2PKH, P2SH, bech32, or Taproot). For verifying native BTC. Use chainId "bitcoin" with contractAddress "native".',
+    )
+    tron_wallet: Optional[str] = Field(
+        default=None,
+        description='Tron wallet address (T-prefixed). For verifying TRX or TRC20 tokens (USDT-TRC20). Use chainId "tron".',
+    )
+    stellar_wallet: Optional[str] = Field(
+        default=None,
+        description='Stellar wallet address (G-prefixed). For verifying XLM or classic trustline assets (USDC, BENJI, etc.). Use chainId "stellar"; pass assetCode on the condition.',
+    )
+    sui_wallet: Optional[str] = Field(
+        default=None,
+        description='Sui wallet address (0x + 64 hex). For verifying SUI or Sui-native tokens (USDC). Use chainId "sui" with the fully-qualified type string as contractAddress.',
+    )
     proof: Optional[str] = Field(
         default=None,
         description=(
             'Set to "merkle" to include EIP-1186 Merkle storage proofs in results. '
-            "Proofs available for token_balance conditions on 26 of 30 EVM chains. "
+            "Proofs available for token_balance conditions on supported EVM chains. "
             "Costs 2 credits instead of 1. Reveals raw balance to caller."
         ),
     )
@@ -52,9 +68,11 @@ class AttestSchema(BaseModel):
             'or specify raw "schemaId", "attester", "indexer", "chainId". '
             'For farcaster_id: no extra fields needed (checks IdRegistry on Optimism). '
             "taxon: XRPL NFToken taxon filter (integer, optional). "
-            "Supported chains: Ethereum (1), BNB (56), Base (8453), Polygon (137), "
+            'assetCode: Stellar trustline asset code (e.g. "USDC", "BENJI"); required for Stellar non-native tokens. '
+            "Supported chains: Ethereum (1), XDC (50), BNB (56), Base (8453), Polygon (137), "
             "Arbitrum (42161), Optimism (10), Avalanche (43114), World Chain (480), "
-            "Solana (\"solana\"), and 22 more. Max 10 conditions per call."
+            'Solana ("solana"), XRPL ("xrpl"), Bitcoin ("bitcoin"), Tron ("tron"), '
+            'Stellar ("stellar"), Sui ("sui"), and 23 more EVM. 37 chains total. Max 10 conditions per call.'
         ),
     )
 
@@ -72,7 +90,7 @@ class InsumerAttestTool(BaseTool):
     name: str = "insumer_attest"
     description: str = (
         "Verify on-chain conditions (token balances, NFT ownership, EAS attestations, "
-        "Farcaster identity) across 33 blockchains. Returns a cryptographically signed "
+        "Farcaster identity) across 37 blockchains. Returns a cryptographically signed "
         "true/false verification without exposing actual wallet balances. Use this when "
         "you need to check if a wallet holds a specific token or NFT, has an EAS "
         "attestation (Coinbase Verifications, Gitcoin Passport), or is registered on "
@@ -93,6 +111,10 @@ class InsumerAttestTool(BaseTool):
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
+        bitcoin_wallet: Optional[str] = None,
+        tron_wallet: Optional[str] = None,
+        stellar_wallet: Optional[str] = None,
+        sui_wallet: Optional[str] = None,
         proof: Optional[str] = None,
         format: Optional[str] = None,
         run_manager: Optional[CallbackManagerForToolRun] = None,
@@ -104,6 +126,10 @@ class InsumerAttestTool(BaseTool):
             wallet=wallet,
             solana_wallet=solana_wallet,
             xrpl_wallet=xrpl_wallet,
+            bitcoin_wallet=bitcoin_wallet,
+            tron_wallet=tron_wallet,
+            stellar_wallet=stellar_wallet,
+            sui_wallet=sui_wallet,
             proof=proof,
             format=format,
         )

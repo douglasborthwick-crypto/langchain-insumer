@@ -12,8 +12,9 @@ class InsumerAPIWrapper(BaseModel):
     """Wrapper around The Insumer Model API.
 
     Provides privacy-preserving on-chain verification and token-gated commerce
-    across 33 blockchains. Verifies token balances and NFT ownership without
-    exposing actual wallet balances.
+    across 37 blockchains (31 EVM + Solana + XRPL + Bitcoin + Tron + Stellar + Sui).
+    Verifies token balances and NFT ownership without exposing actual wallet
+    balances.
 
     Args:
         api_key: API key in format ``insr_live_`` followed by 40 hex characters.
@@ -108,6 +109,10 @@ class InsumerAPIWrapper(BaseModel):
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
+        bitcoin_wallet: Optional[str] = None,
+        tron_wallet: Optional[str] = None,
+        stellar_wallet: Optional[str] = None,
+        sui_wallet: Optional[str] = None,
         proof: Optional[str] = None,
         format: Optional[str] = None,
     ) -> dict:
@@ -123,12 +128,17 @@ class InsumerAPIWrapper(BaseModel):
                 - type: "token_balance", "nft_ownership", "eas_attestation", or "farcaster_id"
                 - contractAddress: Token/NFT contract address (for token_balance/nft_ownership).
                   For XRPL: use r-address issuer for trust line tokens, or "native" for XRP.
-                - chainId: EVM chain ID (int), "solana", or "xrpl"
+                  For Stellar: use the asset issuer's G-address, or "native" for XLM.
+                  For Sui: use the fully-qualified type string (e.g. "0x...::usdc::USDC").
+                - chainId: EVM chain ID (int, includes 50 for XDC), "solana", "xrpl",
+                  "bitcoin", "tron", "stellar", or "sui"
                 - threshold: Min balance (for token_balance)
                 - decimals: Token decimals (auto-detected if omitted)
                 - label: Human-readable label
                 - taxon: XRPL NFToken taxon filter (integer, optional)
                 - currency: XRPL trust line currency code (e.g. "USD" for RLUSD)
+                - assetCode: Stellar trustline asset code (e.g. "USDC", "BENJI"). Required
+                  for Stellar non-native tokens. Flows into conditionHash.
                 - template: Compliance template name (for eas_attestation, e.g.
                   "coinbase_verified_account", "gitcoin_passport_score", "gitcoin_passport_active")
                 - schemaId: EAS schema ID (for eas_attestation, if not using template)
@@ -138,6 +148,16 @@ class InsumerAPIWrapper(BaseModel):
             solana_wallet: Solana wallet address (base58)
             xrpl_wallet: XRPL wallet address (r-address). For verifying XRP,
                 trust line tokens (RLUSD, USDC), or NFTs on XRP Ledger.
+            bitcoin_wallet: Bitcoin address (P2PKH, P2SH, bech32, or Taproot).
+                For verifying native BTC balance. Use chainId "bitcoin" with
+                contractAddress "native".
+            tron_wallet: Tron wallet address (T-prefixed, base58). For verifying
+                TRX or TRC20 tokens (USDT-TRC20). Use chainId "tron".
+            stellar_wallet: Stellar wallet address (G-prefixed). For verifying
+                XLM or classic trustline assets. Soroban contract balances not
+                visible. Use chainId "stellar".
+            sui_wallet: Sui wallet address (0x + 64 hex chars). For verifying
+                SUI or Sui-native tokens (USDC). Use chainId "sui".
             proof: Set to "merkle" for EIP-1186 Merkle storage proofs.
                 Available for token_balance conditions on RPC chains only.
                 Costs 2 credits. Reveals raw balance to the caller.
@@ -150,9 +170,11 @@ class InsumerAPIWrapper(BaseModel):
             and key ID (``kid``) identifying the signing key. Fetch the public
             key via ``get_jwks()`` to verify signatures.
             Each result includes ``blockNumber`` and ``blockTimestamp`` (EVM)
-            or ``ledgerIndex`` and ``ledgerHash`` (XRPL). XRPL trust line
-            token results also include ``trustLineState: { frozen: bool }``
+            or ``ledgerIndex`` and ``ledgerHash`` (XRPL/Stellar) or
+            ``checkpointSequence`` and ``checkpointDigest`` (Sui). XRPL trust
+            line token results also include ``trustLineState: { frozen: bool }``
             — a frozen trust line causes ``met: false`` regardless of balance.
+            Stellar non-native results surface ``assetCode`` in ``evaluatedCondition``.
             When format="jwt", response includes a ``jwt`` field with a
             Wallet Auth by InsumerAPI token (ES256-signed JWT).
             When proof="merkle", each result includes a proof object with
@@ -166,6 +188,14 @@ class InsumerAPIWrapper(BaseModel):
             body["solanaWallet"] = solana_wallet
         if xrpl_wallet:
             body["xrplWallet"] = xrpl_wallet
+        if bitcoin_wallet:
+            body["bitcoinWallet"] = bitcoin_wallet
+        if tron_wallet:
+            body["tronWallet"] = tron_wallet
+        if stellar_wallet:
+            body["stellarWallet"] = stellar_wallet
+        if sui_wallet:
+            body["suiWallet"] = sui_wallet
         if proof:
             body["proof"] = proof
         if format:
@@ -177,23 +207,36 @@ class InsumerAPIWrapper(BaseModel):
         wallet: str,
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
+        bitcoin_wallet: Optional[str] = None,
+        tron_wallet: Optional[str] = None,
+        stellar_wallet: Optional[str] = None,
+        sui_wallet: Optional[str] = None,
         proof: Optional[str] = None,
     ) -> dict:
         """Generate a structured wallet trust fact profile.
 
-        Checks 36 base conditions across stablecoins (USDC + USDT on 21 chains),
-        governance tokens (4), NFTs (3), and staking positions (stETH, rETH, cbETH).
-        Up to 40 checks across 24 chains with optional Solana, XRPL, and Bitcoin.
-        Returns per-dimension pass/fail counts and an overall summary. No score
-        — just cryptographically verifiable evidence. Costs 3 credits (standard)
-        or 6 credits (with proof="merkle").
+        Checks 38 base conditions across stablecoins (USDC + USDT on 21 chains),
+        governance tokens (4), NFTs (3), staking positions (stETH, rETH, cbETH),
+        and institutional stablecoins (EURCV/USDCV on Ethereum). Up to 49 checks
+        across 27 chains with optional Solana, XRPL, Bitcoin, Tron, Stellar, and
+        Sui wallets. Returns per-dimension pass/fail counts and an overall summary.
+        No score — just cryptographically verifiable evidence. Costs 3 credits
+        (standard) or 6 credits (with proof="merkle").
 
         Args:
             wallet: EVM wallet address (0x...) to profile.
-            solana_wallet: Solana wallet address (base58). If provided, adds
-                USDC on Solana check.
-            xrpl_wallet: XRPL wallet address (r-address). If provided, adds
-                RLUSD and USDC on XRPL checks.
+            solana_wallet: Solana wallet address (base58). Adds USDC on Solana
+                and institutional EURCV/USDCV on Solana checks.
+            xrpl_wallet: XRPL wallet address (r-address). Adds RLUSD, USDC, and
+                institutional EURCV on XRPL checks.
+            bitcoin_wallet: Bitcoin address. Adds Bitcoin Holdings dimension
+                (native BTC balance).
+            tron_wallet: Tron wallet address (T-prefixed). Adds USDT-TRC20 on
+                Tron check.
+            stellar_wallet: Stellar wallet address (G-prefixed). Adds
+                institutional USDC and BENJI on Stellar checks (classic trustlines).
+            sui_wallet: Sui wallet address (0x + 64 hex). Adds institutional
+                USDC on Sui check.
             proof: Set to "merkle" for EIP-1186 Merkle storage proofs on
                 stablecoin and governance checks. Costs 6 credits.
 
@@ -206,6 +249,14 @@ class InsumerAPIWrapper(BaseModel):
             body["solanaWallet"] = solana_wallet
         if xrpl_wallet:
             body["xrplWallet"] = xrpl_wallet
+        if bitcoin_wallet:
+            body["bitcoinWallet"] = bitcoin_wallet
+        if tron_wallet:
+            body["tronWallet"] = tron_wallet
+        if stellar_wallet:
+            body["stellarWallet"] = stellar_wallet
+        if sui_wallet:
+            body["suiWallet"] = sui_wallet
         if proof:
             body["proof"] = proof
         return self._post("/trust", body)
@@ -225,8 +276,10 @@ class InsumerAPIWrapper(BaseModel):
 
         Args:
             wallets: List of 1-10 dicts, each with ``wallet`` (EVM address,
-                required), optional ``solanaWallet`` (base58), and optional
-                ``xrplWallet`` (r-address).
+                required) and optional ``solanaWallet`` (base58),
+                ``xrplWallet`` (r-address), ``bitcoinWallet``, ``tronWallet``
+                (T-prefixed), ``stellarWallet`` (G-prefixed), and ``suiWallet``
+                (0x + 64 hex).
             proof: Set to ``"merkle"`` for EIP-1186 Merkle storage proofs.
                 Costs 6 credits per wallet instead of 3.
 
@@ -302,6 +355,10 @@ class InsumerAPIWrapper(BaseModel):
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
+        bitcoin_wallet: Optional[str] = None,
+        tron_wallet: Optional[str] = None,
+        stellar_wallet: Optional[str] = None,
+        sui_wallet: Optional[str] = None,
     ) -> dict:
         """Calculate discount for a wallet at a merchant. No authentication required. Free, no credits consumed."""
         params: dict[str, Any] = {"merchant": merchant_id}
@@ -311,6 +368,14 @@ class InsumerAPIWrapper(BaseModel):
             params["solanaWallet"] = solana_wallet
         if xrpl_wallet:
             params["xrplWallet"] = xrpl_wallet
+        if bitcoin_wallet:
+            params["bitcoinWallet"] = bitcoin_wallet
+        if tron_wallet:
+            params["tronWallet"] = tron_wallet
+        if stellar_wallet:
+            params["stellarWallet"] = stellar_wallet
+        if sui_wallet:
+            params["suiWallet"] = sui_wallet
         resp = requests.get(
             f"{BASE_URL}/discount/check",
             params=params,
@@ -325,6 +390,10 @@ class InsumerAPIWrapper(BaseModel):
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
+        bitcoin_wallet: Optional[str] = None,
+        tron_wallet: Optional[str] = None,
+        stellar_wallet: Optional[str] = None,
+        sui_wallet: Optional[str] = None,
     ) -> dict:
         """Create a signed discount code (INSR-XXXXX), valid 30 minutes. Costs 1 credit."""
         body: dict[str, Any] = {"merchantId": merchant_id}
@@ -334,6 +403,14 @@ class InsumerAPIWrapper(BaseModel):
             body["solanaWallet"] = solana_wallet
         if xrpl_wallet:
             body["xrplWallet"] = xrpl_wallet
+        if bitcoin_wallet:
+            body["bitcoinWallet"] = bitcoin_wallet
+        if tron_wallet:
+            body["tronWallet"] = tron_wallet
+        if stellar_wallet:
+            body["stellarWallet"] = stellar_wallet
+        if sui_wallet:
+            body["suiWallet"] = sui_wallet
         return self._post("/verify", body)
 
     def buy_key(
@@ -471,6 +548,10 @@ class InsumerAPIWrapper(BaseModel):
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
+        bitcoin_wallet: Optional[str] = None,
+        tron_wallet: Optional[str] = None,
+        stellar_wallet: Optional[str] = None,
+        sui_wallet: Optional[str] = None,
         items: Optional[list] = None,
     ) -> dict:
         """Check discount eligibility in ACP (OpenAI/Stripe Agentic Commerce Protocol) format.
@@ -484,6 +565,10 @@ class InsumerAPIWrapper(BaseModel):
             wallet: EVM wallet address (0x...).
             solana_wallet: Solana wallet address (base58).
             xrpl_wallet: XRPL wallet address (r-address).
+            bitcoin_wallet: Bitcoin address.
+            tron_wallet: Tron wallet address (T-prefixed).
+            stellar_wallet: Stellar wallet address (G-prefixed).
+            sui_wallet: Sui wallet address (0x + 64 hex).
             items: Optional line items for per-item allocations. Each dict has
                 ``path`` (JSONPath, e.g. '$.line_items[0]') and ``amount`` (cents).
 
@@ -498,6 +583,14 @@ class InsumerAPIWrapper(BaseModel):
             body["solanaWallet"] = solana_wallet
         if xrpl_wallet:
             body["xrplWallet"] = xrpl_wallet
+        if bitcoin_wallet:
+            body["bitcoinWallet"] = bitcoin_wallet
+        if tron_wallet:
+            body["tronWallet"] = tron_wallet
+        if stellar_wallet:
+            body["stellarWallet"] = stellar_wallet
+        if sui_wallet:
+            body["suiWallet"] = sui_wallet
         if items is not None:
             body["items"] = items
         return self._post("/acp/discount", body)
@@ -508,6 +601,10 @@ class InsumerAPIWrapper(BaseModel):
         wallet: Optional[str] = None,
         solana_wallet: Optional[str] = None,
         xrpl_wallet: Optional[str] = None,
+        bitcoin_wallet: Optional[str] = None,
+        tron_wallet: Optional[str] = None,
+        stellar_wallet: Optional[str] = None,
+        sui_wallet: Optional[str] = None,
         items: Optional[list] = None,
     ) -> dict:
         """Check discount eligibility in UCP (Google Universal Commerce Protocol) format.
@@ -521,6 +618,10 @@ class InsumerAPIWrapper(BaseModel):
             wallet: EVM wallet address (0x...).
             solana_wallet: Solana wallet address (base58).
             xrpl_wallet: XRPL wallet address (r-address).
+            bitcoin_wallet: Bitcoin address.
+            tron_wallet: Tron wallet address (T-prefixed).
+            stellar_wallet: Stellar wallet address (G-prefixed).
+            sui_wallet: Sui wallet address (0x + 64 hex).
             items: Optional line items for per-item allocations. Each dict has
                 ``path`` (JSONPath, e.g. '$.line_items[0]') and ``amount`` (cents).
 
@@ -535,6 +636,14 @@ class InsumerAPIWrapper(BaseModel):
             body["solanaWallet"] = solana_wallet
         if xrpl_wallet:
             body["xrplWallet"] = xrpl_wallet
+        if bitcoin_wallet:
+            body["bitcoinWallet"] = bitcoin_wallet
+        if tron_wallet:
+            body["tronWallet"] = tron_wallet
+        if stellar_wallet:
+            body["stellarWallet"] = stellar_wallet
+        if sui_wallet:
+            body["suiWallet"] = sui_wallet
         if items is not None:
             body["items"] = items
         return self._post("/ucp/discount", body)
