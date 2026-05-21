@@ -14,7 +14,9 @@ Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer
 pip install langchain-insumer
 ```
 
-## Get an API Key
+## Get a key — no signup, no dashboard, no password
+
+Two paths. Both return an `insr_live_...` key instantly with 10 verification credits and 100 reads/day. One free key per email.
 
 ```bash
 curl -X POST \
@@ -23,7 +25,9 @@ curl -X POST \
   -d '{"email": "you@example.com", "appName": "my-agent", "tier": "free"}'
 ```
 
-Returns an `insr_live_...` key instantly with 10 verification credits. Or get one at [insumermodel.com/developers](https://insumermodel.com/developers/#pricing).
+Or enter your email on [insumermodel.com](https://insumermodel.com/?utm_source=pypi-langchain-insumer) — the key appears inline.
+
+**Already have a key?** Manage usage, top up, or upgrade at [insumermodel.com/developers/account/](https://insumermodel.com/developers/account/?utm_source=pypi-langchain-insumer).
 
 ## Quick Start
 
@@ -408,9 +412,9 @@ if not result.get("ok") and result.get("error", {}).get("code") == "rpc_failure"
 
 31 EVM chains + Solana + XRP Ledger + Bitcoin + Tron + Stellar + Sui. Includes Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, XDC, and 23 more EVM. [Full list →](https://insumermodel.com/developers/api-reference/)
 
-## Get an API Key
+## Get a key — no signup, no dashboard, no password
 
-Generate one from your terminal — no browser needed:
+Generate one from your terminal:
 
 ```bash
 curl -s -X POST https://api.insumermodel.com/v1/keys/create \
@@ -420,7 +424,7 @@ curl -s -X POST https://api.insumermodel.com/v1/keys/create \
 
 Returns an `insr_live_...` key with 100 reads/day and 10 verification credits. One free key per email.
 
-Or get one at [insumermodel.com/developers](https://insumermodel.com/developers/).
+Or enter your email on [insumermodel.com](https://insumermodel.com/?utm_source=pypi-langchain-insumer). Already have a key? Manage it at [insumermodel.com/developers/account/](https://insumermodel.com/developers/account/?utm_source=pypi-langchain-insumer).
 
 **Tiers:** Free (100 reads/day, 10 credits) | Pro $9/mo (10,000/day) | Enterprise $29/mo (100,000/day)
 
