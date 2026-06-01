@@ -125,14 +125,23 @@ class InsumerAPIWrapper(BaseModel):
 
         Args:
             conditions: List of condition dicts, each with:
-                - type: "token_balance", "nft_ownership", "eas_attestation", or "farcaster_id"
-                - contractAddress: Token/NFT contract address (for token_balance/nft_ownership).
+                - type: "token_balance", "nft_ownership", "eas_attestation",
+                  "farcaster_id", "ratio_to_amount", or "ratio_to_supply"
+                - contractAddress: Token/NFT contract address (for token_balance/nft_ownership/ratio_*).
                   For XRPL: use r-address issuer for trust line tokens, or "native" for XRP.
                   For Stellar: use the asset issuer's G-address, or "native" for XLM.
                   For Sui: use the fully-qualified type string (e.g. "0x...::usdc::USDC").
+                  ratio_to_supply requires an ERC-20 contract (no "native").
                 - chainId: EVM chain ID (int, includes 50 for XDC), "solana", "xrpl",
-                  "bitcoin", "tron", "stellar", or "sui"
+                  "bitcoin", "tron", "stellar", or "sui" (ratio_to_amount and
+                  ratio_to_supply are RPC EVM chains only)
                 - threshold: Min balance (for token_balance)
+                - multiple: collateralization multiple (for ratio_to_amount; met iff
+                  balance >= multiple * amount)
+                - amount: per-request reference amount in token units (for ratio_to_amount,
+                  e.g. 100 for 100 USDC, not base units)
+                - minFraction: required share of total supply, a fraction in (0, 1]
+                  (for ratio_to_supply, e.g. 0.005 for 0.5%; met iff balance / totalSupply >= minFraction)
                 - decimals: Token decimals (auto-detected if omitted)
                 - label: Human-readable label
                 - taxon: XRPL NFToken taxon filter (integer, optional)
