@@ -62,14 +62,15 @@ class AttestSchema(BaseModel):
             'JSON array of conditions. Each condition: {"type": "token_balance" or '
             '"nft_ownership" or "eas_attestation" or "farcaster_id" or "ratio_to_amount" or '
             '"ratio_to_supply", "contractAddress": "0x...", '
-            '"chainId": 1, "threshold": 1000, "decimals": 6, "label": "USDC >= 1000"}. '
+            '"chainId": 1, "threshold": "1000", "decimals": 6, "label": "USDC >= 1000"}. '
+            'threshold is a decimal string in token units (e.g. "1000", not 1000). '
             'For eas_attestation: use "template": "coinbase_verified_account" (or '
             '"coinbase_verified_country", "coinbase_one", "gitcoin_passport_score", '
             '"gitcoin_passport_active") instead of contractAddress, '
             'or specify raw "schemaId", "attester", "indexer", "chainId". '
             'For farcaster_id: no extra fields needed (checks IdRegistry on Optimism). '
-            'For ratio_to_amount (RPC EVM only): add "multiple" and "amount" (met iff balance >= multiple * amount). '
-            'For ratio_to_supply (RPC EVM, ERC-20 only): add "minFraction", a fraction in (0,1] (met iff balance / totalSupply >= minFraction). '
+            'For ratio_to_amount (RPC EVM only): add "multiple" and "amount" as decimal strings (e.g. "10", "100") (met iff balance >= multiple * amount). '
+            'For ratio_to_supply (RPC EVM, ERC-20 only): add "minFraction" as a decimal string in (0,1] (e.g. "0.005") (met iff balance / totalSupply >= minFraction). '
             "taxon: XRPL NFToken taxon filter (integer, optional). "
             'assetCode: Stellar trustline asset code (e.g. "USDC", "BENJI"); required for Stellar non-native tokens. '
             "Supported chains: Ethereum (1), XDC (50), BNB (56), Base (8453), Polygon (137), "

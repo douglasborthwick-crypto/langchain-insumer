@@ -135,13 +135,16 @@ class InsumerAPIWrapper(BaseModel):
                 - chainId: EVM chain ID (int, includes 50 for XDC), "solana", "xrpl",
                   "bitcoin", "tron", "stellar", or "sui" (ratio_to_amount and
                   ratio_to_supply are RPC EVM chains only)
-                - threshold: Min balance (for token_balance)
-                - multiple: collateralization multiple (for ratio_to_amount; met iff
-                  balance >= multiple * amount)
-                - amount: per-request reference amount in token units (for ratio_to_amount,
-                  e.g. 100 for 100 USDC, not base units)
-                - minFraction: required share of total supply, a fraction in (0, 1]
-                  (for ratio_to_supply, e.g. 0.005 for 0.5%; met iff balance / totalSupply >= minFraction)
+                - threshold: Min balance for token_balance, as a decimal string in
+                  token/display units (e.g. "1000", not 1000) to preserve full
+                  precision. A number is accepted and coerced to a string.
+                - multiple: collateralization multiple as a decimal string (for
+                  ratio_to_amount; met iff balance >= multiple * amount), e.g. "10"
+                - amount: per-request reference amount in token units as a decimal string
+                  (for ratio_to_amount, e.g. "100" for 100 USDC, not base units)
+                - minFraction: required share of total supply as a decimal string in (0, 1]
+                  (for ratio_to_supply, e.g. "0.005" for 0.5%; met iff balance / totalSupply >= minFraction).
+                  A number is accepted and coerced to a string for all three.
                 - decimals: Token decimals (auto-detected if omitted)
                 - label: Human-readable label
                 - taxon: XRPL NFToken taxon filter (integer, optional)
@@ -190,7 +193,30 @@ class InsumerAPIWrapper(BaseModel):
             accountProof, storageProof, storageHash, blockNumber, and
             mappingSlot fields.
         """
-        body: dict[str, Any] = {"conditions": conditions}
+        # v2 keys require agent-supplied quantities as decimal strings (preserving full
+        # precision, no float in signed bytes); v1 keys accept either. Coerce numbers to
+        # strings so the request works on any key. Other condition fields are untouched.
+        #   token_balance.threshold, ratio_to_amount.multiple/amount, ratio_to_supply.minFraction.
+        # NOTE: str() — NOT the builtin format(), which is shadowed by the `format` parameter.
+        _str_fields = {
+            "token_balance": ("threshold",),
+            "ratio_to_amount": ("multiple", "amount"),
+            "ratio_to_supply": ("minFraction",),
+        }
+        norm_conditions: list[dict[str, Any]] = []
+        for c in conditions:
+            if isinstance(c, dict):
+                fields = _str_fields.get(c.get("type"))
+                if fields:
+                    updates = {
+                        f: str(c[f])
+                        for f in fields
+                        if c.get(f) is not None and not isinstance(c[f], str)
+                    }
+                    if updates:
+                        c = {**c, **updates}
+            norm_conditions.append(c)
+        body: dict[str, Any] = {"conditions": norm_conditions}
         if wallet:
             body["wallet"] = wallet
         if solana_wallet:

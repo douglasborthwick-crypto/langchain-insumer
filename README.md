@@ -44,7 +44,7 @@ result = api.attest(
             "type": "token_balance",
             "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
             "chainId": 1,
-            "threshold": 1000,
+            "threshold": "1000",
             "decimals": 6,
             "label": "USDC >= 1000 on Ethereum",
         }
@@ -58,6 +58,8 @@ for r in attestation["results"]:
 print(f"Signature: {result['data']['sig']}")
 print(f"Key ID: {result['data']['kid']}")
 ```
+
+> **`token_balance` thresholds are decimal strings.** Send `"threshold": "1000"`, not `1000`. Keys created from 2026-06-10 sign with `kid: insumer-attest-v2`, which preserves full precision and rejects a JSON number with a `400`; older `insumer-attest-v1` keys accept either. This wrapper coerces a number to a string for you, but the string form is canonical.
 
 ### What you get back
 
@@ -129,7 +131,7 @@ result = api.attest(
             "type": "token_balance",
             "contractAddress": "native",
             "chainId": "xrpl",
-            "threshold": 100,
+            "threshold": "100",
             "label": "XRP >= 100",
         }
     ],
@@ -144,7 +146,7 @@ result = api.attest(
             "contractAddress": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
             "chainId": "xrpl",
             "currency": "RLUSD",
-            "threshold": 10,
+            "threshold": "10",
             "label": "RLUSD >= 10 on XRPL",
         }
     ],
@@ -377,7 +379,7 @@ result = api.attest(
             "type": "token_balance",
             "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
             "chainId": 1,
-            "threshold": 1000,
+            "threshold": "1000",
             "decimals": 6,
             "label": "USDC >= 1000",
         }
