@@ -12,7 +12,7 @@ class InsumerAPIWrapper(BaseModel):
     """Wrapper around The Insumer Model API.
 
     Provides privacy-preserving on-chain verification and token-gated commerce
-    across 37 blockchains (31 EVM + Solana + XRPL + Bitcoin + Tron + Stellar + Sui).
+    across 38 blockchains (32 EVM + Solana + XRPL + Bitcoin + Tron + Stellar + Sui).
     Verifies token balances and NFT ownership without exposing actual wallet
     balances.
 
@@ -126,7 +126,8 @@ class InsumerAPIWrapper(BaseModel):
         Args:
             conditions: List of condition dicts, each with:
                 - type: "token_balance", "nft_ownership", "eas_attestation",
-                  "farcaster_id", "ratio_to_amount", or "ratio_to_supply"
+                  "farcaster_id", "evm_view_call", "ratio_to_amount", "ratio_to_supply",
+                  "erc8004_agent", or "erc7710_delegation"
                 - contractAddress: Token/NFT contract address (for token_balance/nft_ownership/ratio_*).
                   For XRPL: use r-address issuer for trust line tokens, or "native" for XRP.
                   For Stellar: use the asset issuer's G-address, or "native" for XLM.

@@ -60,8 +60,8 @@ class AttestSchema(BaseModel):
     conditions: str = Field(
         description=(
             'JSON array of conditions. Each condition: {"type": "token_balance" or '
-            '"nft_ownership" or "eas_attestation" or "farcaster_id" or "ratio_to_amount" or '
-            '"ratio_to_supply", "contractAddress": "0x...", '
+            '"nft_ownership" or "eas_attestation" or "farcaster_id" or "evm_view_call" or "ratio_to_amount" or '
+            '"ratio_to_supply" or "erc8004_agent" or "erc7710_delegation", "contractAddress": "0x...", '
             '"chainId": 1, "threshold": "1000", "decimals": 6, "label": "USDC >= 1000"}. '
             'threshold is a decimal string in token units (e.g. "1000", not 1000). '
             'For eas_attestation: use "template": "coinbase_verified_account" (or '
@@ -71,12 +71,16 @@ class AttestSchema(BaseModel):
             'For farcaster_id: no extra fields needed (checks IdRegistry on Optimism). '
             'For ratio_to_amount (RPC EVM only): add "multiple" and "amount" as decimal strings (e.g. "10", "100") (met iff balance >= multiple * amount). '
             'For ratio_to_supply (RPC EVM, ERC-20 only): add "minFraction" as a decimal string in (0,1] (e.g. "0.005") (met iff balance / totalSupply >= minFraction). '
+            'For evm_view_call (RPC EVM only): add "selector" as the canonical signature of a single-address-argument view function returning bool (e.g. "hasAccess(address)"). '
+            'For erc8004_agent (Base, chainId 8453): add "agentId" as a uint256 decimal string (met iff the wallet owns the agent NFT or is the registry agentWallet binding; registration is permissionless, no vetting implied). '
+            'For erc7710_delegation (Base, chainId 8453, max 3 per call): add "delegationManager" (a recognized MetaMask Delegation Framework manager), "expectedDelegator" (the asserted principal), and "delegation" ({delegator, delegate, authority, caveats, salt, signature}); met iff the wallet is the delegate, the delegator matches, the EIP-712 signature verifies (EOA or ERC-1271), unrevoked at the anchored block, all caveat enforcers recognized, time windows satisfied. Spend/target/call limits are reported as declaredLimits, not simulated. Delegation attestations expire in 5 minutes. '
             "taxon: XRPL NFToken taxon filter (integer, optional). "
             'assetCode: Stellar trustline asset code (e.g. "USDC", "BENJI"); required for Stellar non-native tokens. '
             "Supported chains: Ethereum (1), XDC (50), BNB (56), Base (8453), Polygon (137), "
             "Arbitrum (42161), Optimism (10), Avalanche (43114), World Chain (480), "
             'Solana ("solana"), XRPL ("xrpl"), Bitcoin ("bitcoin"), Tron ("tron"), '
-            'Stellar ("stellar"), Sui ("sui"), and 23 more EVM. 37 chains total. Max 10 conditions per call.'
+            'Stellar ("stellar"), Sui ("sui"), Robinhood Chain (4663), and 23 more EVM. 38 chains total. '
+            "nft_ownership is supported on 34 of the 38 (EVM + Solana + XRPL); Bitcoin, Tron, Stellar and Sui are token_balance only. Max 10 conditions per call."
         ),
     )
 
@@ -94,7 +98,8 @@ class InsumerAttestTool(BaseTool):
     name: str = "insumer_attest"
     description: str = (
         "Verify on-chain conditions (token balances, NFT ownership, EAS attestations, "
-        "Farcaster identity) across 37 blockchains. Returns a cryptographically signed "
+        "Farcaster identity, arbitrary boolean view calls, supply/amount ratios, ERC-8004 "
+        "agent registration, ERC-7710 delegation validity) across 38 blockchains. Returns a cryptographically signed "
         "true/false verification without exposing actual wallet balances. Use this when "
         "you need to check if a wallet holds a specific token or NFT, has an EAS "
         "attestation (Coinbase Verifications, Gitcoin Passport), or is registered on "

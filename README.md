@@ -1,12 +1,12 @@
 # langchain-insumer
 
-LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- wallet auth across 37 blockchains. Returns ECDSA-signed booleans without exposing wallet balances. Up to 10 conditions per request, each with its own chainId. Optional Merkle storage proofs for trustless verification.
+LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- wallet auth across 38 blockchains. Returns ECDSA-signed booleans without exposing wallet balances. Up to 10 conditions per request, each with its own chainId. Optional Merkle storage proofs for trustless verification.
 
 **In production:** [AsterPay](https://github.com/AsterPay/erc8183-kya-hook) — a regulated payments stack — runs live ERC-8183 agentic-commerce trust scoring on InsumerAPI. [Case study](https://insumermodel.com/blog/asterpay-kya-erc8183-attestation-integration.html).
 
 Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (27 tools, npm) | [ElizaOS](https://www.npmjs.com/package/eliza-plugin-insumer) (10 actions, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
 
-**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 37 chains, trust profiles, commerce protocols, and signature verification.
+**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 38 chains, trust profiles, commerce protocols, and signature verification.
 
 ## Install
 
@@ -410,9 +410,9 @@ if not result.get("ok") and result.get("error", {}).get("code") == "rpc_failure"
     print("RPC failure:", result["error"]["failedConditions"])
 ```
 
-## Supported Chains (37)
+## Supported Chains (38)
 
-31 EVM chains + Solana + XRP Ledger + Bitcoin + Tron + Stellar + Sui. Includes Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, XDC, and 23 more EVM. [Full list →](https://insumermodel.com/developers/api-reference/)
+32 EVM chains + Solana + XRP Ledger + Bitcoin + Tron + Stellar + Sui. Includes Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, XDC, Robinhood Chain, and 23 more EVM. NFT ownership on 34 of the 38 (EVM + Solana + XRPL); Bitcoin, Tron, Stellar and Sui are token-balance only. [Full list →](https://insumermodel.com/developers/api-reference/)
 
 ## Get a key — no signup, no dashboard, no password
 
