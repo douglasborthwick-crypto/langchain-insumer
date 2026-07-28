@@ -7,7 +7,7 @@ name = "langchain-insumer"
 version = "0.13.0"
 description = "LangChain tools for InsumerAPI — condition-based access across 38 blockchains (incl. Tron, Stellar, Sui, XDC, Robinhood Chain). Wallet trust profiles (49 checks across 27 chains), EAS attestations, Gitcoin Passport, Farcaster ID, staking positions, compliance templates, ACP/UCP commerce, domain verification, merchant onboarding, USDC/USDT/BTC/USDT-TRC20 key purchase, and credit management. ECDSA-signed booleans, optional Merkle proofs, 26 tools."
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.9"
 authors = [
     {name = "The Insumer Model", email = "contact@insumermodel.com"},
@@ -37,7 +37,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
