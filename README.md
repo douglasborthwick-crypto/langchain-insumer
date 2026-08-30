@@ -80,12 +80,11 @@ print(f"Key ID: {result['data']['kid']}")
           "evaluatedCondition": {
             "chainId": 1,
             "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-            "decimals": 6,
             "operator": "gte",
-            "threshold": 1000,
+            "threshold": "1000",
             "type": "token_balance"
           },
-          "conditionHash": "0x554251734232c8b43062f1cf2bb51b76650d13268104d74c645f4893e67ef69c",
+          "conditionHash": "0x8a3b...",
           "blockNumber": "0x129e3f7",
           "blockTimestamp": "2026-02-28T12:34:56.000Z"
         }
@@ -95,8 +94,8 @@ print(f"Key ID: {result['data']['kid']}")
       "attestedAt": "2026-02-28T12:34:57.000Z",
       "expiresAt": "2026-02-28T13:04:57.000Z"
     },
-    "sig": "dmNJKqnGZ9f47qpWax9gxgw1DhUKHKHrbLspTop8NWzYhv2fNpVAt1gAuhUfU4xPsgXTCdrmTXI4vEE50dcfEA==",
-    "kid": "insumer-attest-v1"
+    "sig": "MEUCIQD...(base64 ECDSA signature)...",
+    "kid": "insumer-attest-v2"
   },
   "meta": { "version": "1.0", "timestamp": "2026-02-28T12:34:57.000Z", "creditsRemaining": 99, "creditsCharged": 1 }
 }
