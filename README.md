@@ -193,6 +193,12 @@ This verifies the ECDSA P-256 signature, condition hash integrity, block freshne
 
 ## With a LangChain Agent
 
+The agent stack is not installed by this package; add it first:
+
+```bash
+pip install langchain langchain-openai
+```
+
 ```python
 from langchain_insumer import InsumerAPIWrapper, InsumerAttestTool
 from langchain.agents import AgentExecutor, create_tool_calling_agent
