@@ -34,19 +34,22 @@ Or enter your email on [insumermodel.com](https://insumermodel.com/?utm_source=p
 ```python
 from langchain_insumer import InsumerAPIWrapper
 
-api = InsumerAPIWrapper(api_key="insr_live_your_key_here")
+# Reads the key from the INSUMER_API_KEY environment variable,
+# so it never lands in source. Or pass api_key="insr_live_..." directly.
+api = InsumerAPIWrapper()
 
-# Verify a wallet holds >= 1000 USDC on Ethereum
+# Verify a wallet holds >= 1 ETH (native balance; a condition the
+# example wallet reliably meets, so your first call shows pass: true)
 result = api.attest(
     wallet="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
     conditions=[
         {
             "type": "token_balance",
-            "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "contractAddress": "native",
             "chainId": 1,
-            "threshold": "1000",
-            "decimals": 6,
-            "label": "USDC >= 1000 on Ethereum",
+            "threshold": "1",
+            "decimals": 18,
+            "label": "ETH >= 1 on Ethereum",
         }
     ],
 )
@@ -74,14 +77,14 @@ print(f"Key ID: {result['data']['kid']}")
         {
           "condition": 0,
           "met": true,
-          "label": "USDC >= 1000 on Ethereum",
+          "label": "ETH >= 1 on Ethereum",
           "type": "token_balance",
           "chainId": 1,
           "evaluatedCondition": {
             "chainId": 1,
-            "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "contractAddress": "native",
             "operator": "gte",
-            "threshold": "1000",
+            "threshold": "1",
             "type": "token_balance"
           },
           "conditionHash": "0x8a3b...",
@@ -94,7 +97,7 @@ print(f"Key ID: {result['data']['kid']}")
       "attestedAt": "2026-02-28T12:34:57.000Z",
       "expiresAt": "2026-02-28T13:04:57.000Z"
     },
-    "sig": "MEUCIQD...(base64 ECDSA signature)...",
+    "sig": "XUb5ZPUW...(base64 P1363 ECDSA P-256 signature)...",
     "kid": "insumer-attest-v2"
   },
   "meta": { "version": "1.0", "timestamp": "2026-02-28T12:34:57.000Z", "creditsRemaining": 99, "creditsCharged": 1 }
@@ -210,6 +213,31 @@ agent = create_tool_calling_agent(llm, tools, prompt)
 executor = AgentExecutor(agent=agent, tools=tools)
 result = executor.invoke({"input": "Does vitalik.eth hold at least 100 USDC on Ethereum?"})
 print(result["output"])
+```
+
+### Without an agent (no LLM required)
+
+Every tool can be invoked directly. Note that `InsumerAttestTool` takes
+`conditions` as a JSON *string* (the schema an LLM fills), so serialize
+the list first:
+
+```python
+import json
+from langchain_insumer import InsumerAPIWrapper, InsumerAttestTool, InsumerCreditsTool
+
+api = InsumerAPIWrapper()  # reads INSUMER_API_KEY
+
+print(InsumerCreditsTool(api_wrapper=api).run({}))
+
+attest = InsumerAttestTool(api_wrapper=api)
+print(attest.run({
+    "wallet": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "conditions": json.dumps([
+        {"type": "token_balance", "contractAddress": "native",
+         "chainId": 1, "threshold": "1", "decimals": 18,
+         "label": "ETH >= 1"}
+    ]),
+}))
 ```
 
 ## Available Tools (26)

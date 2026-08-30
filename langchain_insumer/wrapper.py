@@ -1,9 +1,10 @@
 """API wrapper for The Insumer Model On-Chain Verification API."""
 
+import os
 from typing import Any, Optional
 
 import requests
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 BASE_URL = "https://api.insumermodel.com/v1"
 
@@ -18,12 +19,28 @@ class InsumerAPIWrapper(BaseModel):
 
     Args:
         api_key: API key in format ``insr_live_`` followed by 40 hex characters.
+            Falls back to the ``INSUMER_API_KEY`` environment variable when
+            omitted, so keys stay out of source code.
             Get a free key at https://insumermodel.com/developers/
         timeout: Request timeout in seconds. Default 30.
     """
 
-    api_key: str = Field(description="Insumer API key (insr_live_...)")
+    api_key: Optional[str] = Field(
+        default=None, description="Insumer API key (insr_live_...)"
+    )
     timeout: int = Field(default=30, description="Request timeout in seconds")
+
+    @model_validator(mode="after")
+    def _resolve_api_key(self) -> "InsumerAPIWrapper":
+        if not self.api_key:
+            self.api_key = os.environ.get("INSUMER_API_KEY")
+        if not self.api_key:
+            raise ValueError(
+                "An API key is required. Pass api_key=... or set the "
+                "INSUMER_API_KEY environment variable. "
+                "Get a free key at https://insumermodel.com/developers/"
+            )
+        return self
 
     def _headers(self) -> dict:
         return {
