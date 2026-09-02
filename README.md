@@ -98,13 +98,17 @@ print(f"Key ID: {result['data']['kid']}")
       "expiresAt": "2026-02-28T13:04:57.000Z"
     },
     "sig": "XUb5ZPUW...(base64 P1363 ECDSA P-256 signature)...",
-    "kid": "insumer-attest-v2"
+    "kid": "insumer-attest-v2",
+    "pqSig": "...(base64 ML-DSA-65 post-quantum companion signature)...",
+    "pqKid": "insumer-attest-pq1"
   },
   "meta": { "version": "1.0", "timestamp": "2026-02-28T12:34:57.000Z", "creditsRemaining": 99, "creditsCharged": 1 }
 }
 ```
 
 No balances. No amounts. Just a signed true/false per condition.
+
+Since September 2026 every attest and trust response also carries an ML-DSA-65 post-quantum companion signature (`pqSig`, `pqKid`; `pqJwt` beside `jwt`) over the same bytes the classical `kid` selects. It is additive: `sig` and `kid` are unchanged, and the companion key is published in the same JWKS under the RFC 9964 `AKP` kids `insumer-attest-pq1` and `insumer-trust-pq1`.
 
 ### Wallet Auth (JWT)
 
@@ -120,7 +124,7 @@ result = api.attest(
 print(result["data"]["jwt"])  # ES256-signed JWT
 ```
 
-The response includes an additional `jwt` field. This token is verifiable by any standard JWT library via the JWKS endpoint at `GET /v1/jwks` — compatible with Kong, Nginx, Cloudflare Access, AWS API Gateway, and other JWT middleware.
+The response includes an additional `jwt` field, with its post-quantum sibling `pqJwt` (a compact JWS, `alg: ML-DSA-65`, same claims) beside it. The `jwt` token is verifiable by any standard JWT library via the JWKS endpoint at `GET /v1/jwks` — compatible with Kong, Nginx, Cloudflare Access, AWS API Gateway, and other JWT middleware.
 
 ### XRPL Verification
 
@@ -174,7 +178,7 @@ npm install insumer-verify
 ```typescript
 import { verifyAttestation } from "insumer-verify";
 
-// attestationResponse = the full API envelope {ok, data: {attestation, sig, kid}, meta}
+// attestationResponse = the full API envelope {ok, data: {attestation, sig, kid, pqSig, pqKid}, meta}
 // Do NOT pass attestationResponse.data — the function expects the outer envelope
 const result = await verifyAttestation(attestationResponse, {
   jwksUrl: "https://insumermodel.com/.well-known/jwks.json",
@@ -182,14 +186,14 @@ const result = await verifyAttestation(attestationResponse, {
 });
 
 if (result.valid) {
-  // Signature verified, condition hashes match, not expired
+  // Signature verified, condition hashes match, fresh, not expired, companion not refuted
   console.log("Attestation verified");
 } else {
   console.log("Verification failed:", result.checks);
 }
 ```
 
-This verifies the ECDSA P-256 signature, condition hash integrity, block freshness, and attestation expiry. The signing key is fetched from the JWKS endpoint and matched by `kid`, so it handles key rotation automatically.
+This reports five verdicts: the ECDSA P-256 signature, condition hash integrity, block freshness, attestation expiry, and the ML-DSA-65 post-quantum companion (`verified`, `refuted`, `absent`, or `unverifiable`; a refuted companion always fails, an absent one fails only under a cutoff you set). `insumer-verify` 1.8.0 and later report the companion verdict. The signing keys are fetched from the JWKS endpoint and matched by `kid` and `pqKid`, never by position, so key rotation is handled automatically.
 
 ## With a LangChain Agent
 
@@ -254,11 +258,11 @@ print(attest.run({
 |------|-------------|---------|
 | `InsumerAttestTool` | Verify on-chain conditions (token balances, NFT ownership, EAS attestations, Farcaster identity). Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
 | `InsumerComplianceTemplatesTool` | List available EAS compliance templates (Coinbase Verifications on Base, Gitcoin Passport on Optimism). | Free |
-| `InsumerWalletTrustTool` | Generate wallet trust fact profile (36 base checks, 4 dimensions; up to 40 across 7 dimensions with optional Solana, XRPL, and Bitcoin). | 3/call (6 with merkle) |
+| `InsumerWalletTrustTool` | Generate wallet trust fact profile (44 base checks across 25 chains in 5 dimensions; up to 49 across 27 chains in 9 dimensions with optional Solana, XRPL, Bitcoin, and Tron wallets). | 3/call (6 with merkle) |
 | `InsumerBatchWalletTrustTool` | Batch trust profiles for up to 10 wallets. 5-8x faster. Each wallet can include optional `solanaWallet` and `xrplWallet`. | 3/wallet (6 with merkle) |
 | `InsumerVerifyTool` | Create signed discount code (INSR-XXXXX), valid 30 min. | 1/call |
 | `InsumerConfirmPaymentTool` | Confirm USDC payment for a discount code. | Free |
-| `InsumerJwksTool` | Get ECDSA P-256 public signing key (JWKS). | Free |
+| `InsumerJwksTool` | Get the JWKS: the ECDSA P-256 signing key under three kids plus the ML-DSA-65 post-quantum key under two RFC 9964 `AKP` entries. | Free |
 
 ### Discovery
 

@@ -89,13 +89,18 @@ class InsumerAPIWrapper(BaseModel):
         return resp.json()
 
     def get_jwks(self) -> dict:
-        """Get the JWKS containing InsumerAPI's ECDSA P-256 public signing key.
+        """Get the JWKS containing InsumerAPI's public signing keys.
 
-        No authentication required. The ``kid`` field matches the ``kid`` in
-        attestation responses, enabling automatic key rotation.
+        Five entries over two keys: the ECDSA P-256 key under the kids
+        ``insumer-attest-v1``, ``insumer-attest-v2`` and ``insumer-trust-v2``,
+        followed by the ML-DSA-65 post-quantum companion key under two RFC 9964
+        ``AKP`` entries, ``insumer-attest-pq1`` and ``insumer-trust-pq1``.
+        No authentication required. Match the ``kid`` (and ``pqKid``) on a
+        response to its entry, never by position, enabling automatic key
+        rotation.
 
         Returns:
-            JWKS document with the public signing key.
+            JWKS document with the public signing keys.
         """
         resp = requests.get(
             f"{BASE_URL}/jwks",
@@ -192,13 +197,18 @@ class InsumerAPIWrapper(BaseModel):
                 Available for token_balance conditions on RPC chains only.
                 Costs 2 credits. Reveals raw balance to the caller.
             format: Set to "jwt" to include a Wallet Auth by InsumerAPI token
-                (ES256-signed JWT) in the response. Verifiable by any standard
+                (ES256-signed JWT) in the response, with its post-quantum
+                sibling ``pqJwt`` beside it. Verifiable by any standard
                 JWT library using JWKS at /.well-known/jwks.json. No additional cost.
 
         Returns:
             API response with verification results, ECDSA signature (``sig``),
-            and key ID (``kid``) identifying the signing key. Fetch the public
-            key via ``get_jwks()`` to verify signatures.
+            and key ID (``kid``) identifying the signing key. Since September
+            2026 every response also carries an ML-DSA-65 post-quantum
+            companion signature (``pqSig``, ``pqKid``) over the same bytes the
+            classical ``kid`` selects; additive, ``sig`` and ``kid`` are
+            unchanged. Fetch the public keys via ``get_jwks()`` to verify
+            signatures.
             Each result includes ``blockNumber`` and ``blockTimestamp`` (EVM)
             or ``ledgerIndex`` and ``ledgerHash`` (XRPL/Stellar) or
             ``checkpointSequence`` and ``checkpointDigest`` (Sui). XRPL trust
@@ -268,11 +278,16 @@ class InsumerAPIWrapper(BaseModel):
     ) -> dict:
         """Generate a structured wallet trust fact profile.
 
-        Checks 38 base conditions across stablecoins (USDC + USDT on 21 chains),
-        governance tokens (4), NFTs (3), staking positions (stETH, rETH, cbETH),
-        and institutional stablecoins (EURCV/USDCV on Ethereum). Up to 49 checks
-        across 27 chains with optional Solana, XRPL, Bitcoin, Tron, Stellar, and
-        Sui wallets. Returns per-dimension pass/fail counts and an overall summary.
+        Checks 44 base conditions across 25 chains in 5 dimensions: stablecoins
+        (USDC + USDT, 26 checks), governance tokens (4), NFTs (3), staking
+        positions (stETH, rETH, cbETH), and institutional stablecoins (8: EURCV
+        and USDCV on Ethereum and Solana, EURCV on XRPL, USDC and BENJI on
+        Stellar, USDC on Sui). Up to 49 checks across 27 chains in 9 dimensions
+        with optional Solana, XRPL, Bitcoin, Tron, Stellar, and Sui wallets. A
+        check whose chain wallet was not supplied stays in the signed profile
+        with ``evaluated: false`` and ``reason: "wallet_not_provided"``, counted
+        in ``notEvaluatedCount`` rather than passed or failed. Returns
+        per-dimension pass/fail counts and an overall summary.
         No score — just cryptographically verifiable evidence. Costs 3 credits
         (standard) or 6 credits (with proof="merkle").
 
@@ -295,7 +310,9 @@ class InsumerAPIWrapper(BaseModel):
 
         Returns:
             API response with trust profile, ECDSA signature (``sig``),
-            and key ID (``kid``).
+            key ID (``kid``, ``insumer-trust-v2`` on current keys), and the
+            ML-DSA-65 post-quantum companion (``pqSig``, ``pqKid``
+            ``insumer-trust-pq1``) carried since September 2026.
         """
         body: dict[str, Any] = {"wallet": wallet}
         if solana_wallet:

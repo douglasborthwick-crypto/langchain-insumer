@@ -53,10 +53,13 @@ class WalletTrustSchema(BaseModel):
 class InsumerWalletTrustTool(BaseTool):
     """Generate a structured, ECDSA-signed wallet trust fact profile.
 
-    Checks 38 curated conditions across stablecoins (USDC + USDT on 21 chains),
-    governance tokens (4), NFTs (3), staking positions (stETH, rETH, cbETH), and
-    institutional stablecoins (EURCV/USDCV on Ethereum). Up to 49 checks across
-    27 chains with optional Solana, XRPL, Bitcoin, Tron, Stellar, and Sui wallets.
+    Checks 44 curated conditions across 25 chains in 5 dimensions: stablecoins
+    (USDC + USDT, 26 checks), governance tokens (4), NFTs (3), staking positions
+    (stETH, rETH, cbETH), and institutional stablecoins (8, across Ethereum,
+    Solana, XRPL, Stellar, and Sui). Up to 49 checks across 27 chains in 9
+    dimensions with optional Solana, XRPL, Bitcoin, Tron, Stellar, and Sui
+    wallets. Checks whose chain wallet was not supplied carry evaluated: false
+    and are counted in notEvaluatedCount, never as passed or failed.
     Returns per-dimension pass/fail counts and overall summary. No score, no
     opinion — just cryptographically verifiable evidence. Costs 3 credits
     (standard) or 6 credits (with proof="merkle").
@@ -64,12 +67,13 @@ class InsumerWalletTrustTool(BaseTool):
 
     name: str = "insumer_wallet_trust"
     description: str = (
-        "Generate a wallet trust fact profile. 38 base checks across "
-        "stablecoins (USDC + USDT on 21 chains), governance tokens (UNI, AAVE, "
+        "Generate a wallet trust fact profile. 44 base checks across 25 chains "
+        "in 5 dimensions: stablecoins (USDC + USDT), governance tokens (UNI, AAVE, "
         "ARB, OP), NFTs (BAYC, Pudgy Penguins, Wrapped CryptoPunks), staking "
         "positions (stETH, rETH, cbETH), and institutional stablecoins. Up to "
-        "49 checks across 27 chains with optional Solana, XRPL, Bitcoin, Tron, "
-        "Stellar, and Sui wallets. "
+        "49 checks across 27 chains in 9 dimensions with optional Solana, XRPL, "
+        "Bitcoin, Tron, Stellar, and Sui wallets; a check whose chain wallet was "
+        "not supplied is reported as evaluated: false, not as a failure. "
         "Returns per-dimension pass/fail counts and ECDSA-signed evidence — no "
         "score, just facts. Use this when you need a comprehensive wallet "
         'assessment without specifying individual conditions. Costs 3 credits '

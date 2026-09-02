@@ -89,7 +89,8 @@ class InsumerAttestTool(BaseTool):
     """Verify on-chain token balances, NFT ownership, EAS attestations, or Farcaster identity.
 
     Returns only true/false per condition -- never exposes actual balances.
-    The response includes an ECDSA P-256 signature for cryptographic proof.
+    The response includes an ECDSA P-256 signature (sig, kid) and, since
+    September 2026, an ML-DSA-65 post-quantum companion (pqSig, pqKid).
     Costs 1 verification credit per call, or 2 credits with proof="merkle".
     For EAS attestations, use a compliance template (Coinbase Verifications,
     Gitcoin Passport) or raw schemaId. For Farcaster, use type "farcaster_id".

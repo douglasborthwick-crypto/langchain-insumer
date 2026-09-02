@@ -1,4 +1,4 @@
-"""Tool for fetching the InsumerAPI JWKS (public signing key)."""
+"""Tool for fetching the InsumerAPI JWKS (public signing keys)."""
 
 import json
 from typing import Optional, Type
@@ -17,19 +17,24 @@ class JwksSchema(BaseModel):
 
 
 class InsumerJwksTool(BaseTool):
-    """Fetch the JWKS containing InsumerAPI's ECDSA P-256 public signing key.
+    """Fetch the JWKS containing InsumerAPI's public signing keys.
 
-    The kid field in attestation responses identifies which key signed the
-    response. Use this tool to fetch the public key for signature verification.
-    No authentication required.
+    Five entries over two keys: the ECDSA P-256 key under three kids
+    (insumer-attest-v1, insumer-attest-v2, insumer-trust-v2) followed by the
+    ML-DSA-65 post-quantum companion key under two RFC 9964 AKP entries
+    (insumer-attest-pq1, insumer-trust-pq1). The kid and pqKid fields in
+    attestation and trust responses identify which entries signed the
+    response; match on them, never on position. No authentication required.
     """
 
     name: str = "insumer_jwks"
     description: str = (
-        "Get the JWKS (JSON Web Key Set) containing InsumerAPI's ECDSA P-256 "
-        "public signing key. Use the kid field from attestation responses to "
-        "match the correct key. Enables signature verification and automatic "
-        "key rotation. Free, no credits consumed."
+        "Get the JWKS (JSON Web Key Set) containing InsumerAPI's public signing "
+        "keys: the ECDSA P-256 key under three kids and the ML-DSA-65 "
+        "post-quantum companion key under two RFC 9964 AKP entries. Match the "
+        "kid and pqKid fields from attestation responses to the correct entry, "
+        "never by position. Enables signature verification and automatic key "
+        "rotation. Free, no credits consumed."
     )
     args_schema: Type[JwksSchema] = JwksSchema
 
