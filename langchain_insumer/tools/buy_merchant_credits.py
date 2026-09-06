@@ -22,9 +22,9 @@ class BuyMerchantCreditsSchema(BaseModel):
             '43114 (Avalanche), "solana", "bitcoin", or "tron" (USDT-TRC20).'
         ),
     )
-    amount: float = Field(
+    amount: Optional[float] = Field(
+        default=None,
         description="Stablecoin amount sent (min 5). Not required for BTC — USD value derived from on-chain BTC amount at market rate.",
-        ge=5,
     )
     update_wallet: bool = Field(
         default=False,
@@ -58,7 +58,7 @@ class InsumerBuyMerchantCreditsTool(BaseTool):
         id: str,
         tx_hash: str,
         chain_id: Any,
-        amount: float,
+        amount: Optional[float] = None,
         update_wallet: bool = False,
         run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:

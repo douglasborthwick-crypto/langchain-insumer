@@ -502,15 +502,16 @@ class InsumerAPIWrapper(BaseModel):
         self,
         tx_hash: str,
         chain_id: Any,
-        amount: float,
+        amount: Optional[float] = None,
         update_wallet: bool = False,
     ) -> dict:
         """Buy verification credits with USDC, USDT, or BTC. Rate: 25 credits per $1. Minimum 5."""
         body: dict = {
             "txHash": tx_hash,
             "chainId": chain_id,
-            "amount": amount,
         }
+        if amount is not None:
+            body["amount"] = amount
         if update_wallet:
             body["updateWallet"] = True
         return self._post("/credits/buy", body)
@@ -599,15 +600,16 @@ class InsumerAPIWrapper(BaseModel):
         merchant_id: str,
         tx_hash: str,
         chain_id: Any,
-        amount: float,
+        amount: Optional[float] = None,
         update_wallet: bool = False,
     ) -> dict:
         """Buy merchant verification credits with USDC, USDT, or BTC. Rate: 25 credits per $1. Min 5. Owner only."""
         body: dict = {
             "txHash": tx_hash,
             "chainId": chain_id,
-            "amount": amount,
         }
+        if amount is not None:
+            body["amount"] = amount
         if update_wallet:
             body["updateWallet"] = True
         return self._post(f"/merchants/{merchant_id}/credits", body)
