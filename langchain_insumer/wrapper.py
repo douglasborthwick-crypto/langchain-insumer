@@ -346,11 +346,11 @@ class InsumerAPIWrapper(BaseModel):
     ) -> dict:
         """Generate a structured wallet trust fact profile.
 
-        Checks 44 base conditions across 25 chains in 5 dimensions: stablecoins
-        (USDC + USDT, 26 checks), governance tokens (4), NFTs (3), staking
+        Checks 45 base conditions across 26 chains in 5 dimensions: stablecoins
+        (USDC + USDT, 27 checks), governance tokens (4), NFTs (3), staking
         positions (stETH, rETH, cbETH), and institutional stablecoins (8: EURCV
         and USDCV on Ethereum and Solana, EURCV on XRPL, USDC and BENJI on
-        Stellar, USDC on Sui). Up to 49 checks across 27 chains in 9 dimensions
+        Stellar, USDC on Sui). Up to 50 checks across 28 chains in 9 dimensions
         with optional Solana, XRPL, Bitcoin, Tron, Stellar, and Sui wallets. A
         check whose chain wallet was not supplied stays in the signed profile
         with ``evaluated: false`` and ``reason: "wallet_not_provided"``, counted

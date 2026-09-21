@@ -257,7 +257,7 @@ print(attest.run({
 |------|-------------|---------|
 | `InsumerAttestTool` | Verify on-chain conditions (token balances, NFT ownership, EAS attestations, Farcaster identity). Optional `proof="merkle"` for EIP-1186 Merkle proofs. | 1/call (2 with merkle) |
 | `InsumerComplianceTemplatesTool` | List available EAS compliance templates (Coinbase Verifications on Base, Gitcoin Passport on Optimism). | Free |
-| `InsumerWalletTrustTool` | Generate wallet trust fact profile (44 base checks across 25 chains in 5 dimensions; up to 49 across 27 chains in 9 dimensions with optional Solana, XRPL, Bitcoin, and Tron wallets). | 3/call (6 with merkle) |
+| `InsumerWalletTrustTool` | Generate wallet trust fact profile (45 base checks across 26 chains in 5 dimensions; up to 50 across 28 chains in 9 dimensions with optional Solana, XRPL, Bitcoin, and Tron wallets). | 3/call (6 with merkle) |
 | `InsumerBatchWalletTrustTool` | Batch trust profiles for up to 10 wallets. 5-8x faster. Each wallet can include optional `solanaWallet` and `xrplWallet`. | 3/wallet (6 with merkle) |
 | `InsumerVerifyTool` | Create signed discount code (INSR-XXXXX), valid 30 min. | 1/call |
 | `InsumerConfirmPaymentTool` | Confirm USDC payment for a discount code. | Free |

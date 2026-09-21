@@ -54,10 +54,10 @@ class WalletTrustSchema(BaseModel):
 class InsumerWalletTrustTool(BaseTool):
     """Generate a structured, ECDSA-signed wallet trust fact profile.
 
-    Checks 44 curated conditions across 25 chains in 5 dimensions: stablecoins
-    (USDC + USDT, 26 checks), governance tokens (4), NFTs (3), staking positions
+    Checks 45 curated conditions across 26 chains in 5 dimensions: stablecoins
+    (USDC + USDT, 27 checks), governance tokens (4), NFTs (3), staking positions
     (stETH, rETH, cbETH), and institutional stablecoins (8, across Ethereum,
-    Solana, XRPL, Stellar, and Sui). Up to 49 checks across 27 chains in 9
+    Solana, XRPL, Stellar, and Sui). Up to 50 checks across 28 chains in 9
     dimensions with optional Solana, XRPL, Bitcoin, Tron, Stellar, and Sui
     wallets. Checks whose chain wallet was not supplied carry evaluated: false
     and are counted in notEvaluatedCount, never as passed or failed.
@@ -68,11 +68,11 @@ class InsumerWalletTrustTool(BaseTool):
 
     name: str = "insumer_wallet_trust"
     description: str = (
-        "Generate a wallet trust fact profile. 44 base checks across 25 chains "
+        "Generate a wallet trust fact profile. 45 base checks across 26 chains "
         "in 5 dimensions: stablecoins (USDC + USDT), governance tokens (UNI, AAVE, "
         "ARB, OP), NFTs (BAYC, Pudgy Penguins, Wrapped CryptoPunks), staking "
         "positions (stETH, rETH, cbETH), and institutional stablecoins. Up to "
-        "49 checks across 27 chains in 9 dimensions with optional Solana, XRPL, "
+        "50 checks across 28 chains in 9 dimensions with optional Solana, XRPL, "
         "Bitcoin, Tron, Stellar, and Sui wallets; a check whose chain wallet was "
         "not supplied is reported as evaluated: false, not as a failure. "
         "Returns per-dimension pass/fail counts and ECDSA-signed evidence — no "
