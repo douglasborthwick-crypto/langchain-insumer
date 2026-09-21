@@ -1,12 +1,12 @@
 # langchain-insumer
 
-LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- wallet auth across 38 blockchains. Returns ECDSA-signed booleans without exposing wallet balances. Up to 10 conditions per request, each with its own chainId. Optional Merkle storage proofs for trustless verification.
+LangChain tools for [InsumerAPI](https://insumermodel.com/developers/) -- wallet auth across 37 blockchains. Returns ECDSA-signed booleans without exposing wallet balances. Up to 10 conditions per request, each with its own chainId. Optional Merkle storage proofs for trustless verification.
 
 **In production:** [AsterPay](https://github.com/AsterPay/erc8183-kya-hook) — a regulated payments stack — runs live ERC-8183 agentic-commerce trust scoring on InsumerAPI. [Case study](https://insumermodel.com/blog/asterpay-kya-erc8183-attestation-integration.html).
 
 Also available as: [MCP server](https://www.npmjs.com/package/mcp-server-insumer) (27 tools, npm) | [ElizaOS](https://www.npmjs.com/package/@insumermodel/plugin-eliza) (10 actions, npm) | [OpenAI GPT](https://chatgpt.com/g/g-699c5e43ce2481918b3f1e7f144c8a49-insumerapi-verify) (GPT Store) | [insumer-verify](https://www.npmjs.com/package/insumer-verify) (client-side verification, npm)
 
-**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)** — covers all 38 chains, trust profiles, commerce protocols, and signature verification.
+**[Full AI Agent Verification API guide](https://insumermodel.com/ai-agent-verification-api/)**: covers all 37 chains, trust profiles, commerce protocols, and signature verification.
 
 ## Install
 
@@ -48,7 +48,6 @@ result = api.attest(
             "contractAddress": "native",
             "chainId": 1,
             "threshold": "1",
-            "decimals": 18,
             "label": "ETH >= 1 on Ethereum",
         }
     ],
@@ -244,7 +243,7 @@ print(attest.run({
     "wallet": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
     "conditions": json.dumps([
         {"type": "token_balance", "contractAddress": "native",
-         "chainId": 1, "threshold": "1", "decimals": 18,
+         "chainId": 1, "threshold": "1",
          "label": "ETH >= 1"}
     ]),
 }))
@@ -417,7 +416,6 @@ result = api.attest(
             "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
             "chainId": 1,
             "threshold": "1000",
-            "decimals": 6,
             "label": "USDC >= 1000",
         }
     ],
@@ -436,20 +434,30 @@ for r in result["data"]["attestation"]["results"]:
 
 ## Handling `rpc_failure` Errors
 
-If the API cannot reach one or more blockchain data sources after retries, endpoints that produce signed attestations (`create_attestation`, `wallet_trust`, `batch_wallet_trust`) return `ok: false` with error code `rpc_failure`. No signature, no JWT, no credits charged. This is a retryable error — retry after 2-5 seconds.
+If the API cannot read one or more blockchain data sources after retries, the endpoints that produce signed results (`attest`, `wallet_trust`, `batch_wallet_trust`) answer with HTTP 503, `ok: false` and error code `rpc_failure`. No signature, no JWT, no credits charged. This is a retryable error: retry after 2-5 seconds.
 
 **Important:** `rpc_failure` is NOT a verification failure. Do not treat it as `pass: false`. It means the data source was temporarily unavailable and the API refused to sign an unverified result.
 
+The wrapper raises `requests.HTTPError` on any 4xx/5xx. The exception message carries the API's own error message (and, for a 503, the `failedConditions` list), and the response is attached as `exc.response`:
+
 ```python
-result = api.attest(wallet="0x...", conditions=[...])
-if not result.get("ok") and result.get("error", {}).get("code") == "rpc_failure":
-    # Retryable — wait and retry
-    print("RPC failure:", result["error"]["failedConditions"])
+import requests
+
+try:
+    result = api.attest(wallet="0x...", conditions=[...])
+except requests.HTTPError as exc:
+    if exc.response.status_code == 503 and "rpc_failure" in str(exc):
+        # Retryable: wait 2-5 seconds and retry. The message lists failedConditions.
+        print("Read refused:", exc)
+    else:
+        # A 400 names what to change, e.g. a `decimals` value that differs
+        # from the token's own, or a Sui contractAddress that is not a coin type
+        print(exc)
 ```
 
-## Supported Chains (38)
+## Supported Chains (37)
 
-32 EVM chains + Solana + XRP Ledger + Bitcoin + Tron + Stellar + Sui. Includes Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, XDC, Robinhood Chain, and 23 more EVM. NFT ownership on 34 of the 38 (EVM + Solana + XRPL); Bitcoin, Tron, Stellar and Sui are token-balance only. [Full list →](https://insumermodel.com/developers/api-reference/)
+31 EVM chains + Solana + XRP Ledger + Bitcoin + Tron + Stellar + Sui. Includes Ethereum, Base, Polygon, Arbitrum, Optimism, BNB Chain, Avalanche, XDC, Robinhood Chain, and 22 more EVM. NFT ownership on 33 of the 37 (EVM + Solana + XRPL); Bitcoin, Tron, Stellar and Sui are token-balance only. Merkle storage proofs are available on 27 of the 31 EVM chains (not ZKsync Era, Sei, Viction or XDC Network). [Full list →](https://insumermodel.com/developers/api-reference/)
 
 ## Get a key — no signup, no dashboard, no password
 
@@ -465,7 +473,7 @@ Returns an `insr_live_...` key with 100 reads/day and 10 verification credits. O
 
 Or enter your email on [insumermodel.com](https://insumermodel.com/?utm_source=pypi-langchain-insumer). Already have a key? Manage it at [insumermodel.com/developers/account/](https://insumermodel.com/developers/account/?utm_source=pypi-langchain-insumer).
 
-**Tiers:** Free (100 reads/day, 10 credits) | Pro $9/mo (10,000/day) | Enterprise $29/mo (100,000/day)
+**Tiers:** Free (100 reads/day, 10 credits) | Pro $29/mo (10,000/day) | Enterprise $99/mo (100,000/day)
 
 ## Links
 

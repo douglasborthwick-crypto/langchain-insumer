@@ -45,7 +45,8 @@ class WalletTrustSchema(BaseModel):
         description=(
             'Set to "merkle" to include EIP-1186 Merkle storage proofs. '
             "Costs 6 credits instead of 3. Proofs available for stablecoin "
-            "and governance checks on RPC chains."
+            "and governance checks on 27 of the 31 EVM chains "
+            "(not ZKsync Era, Sei, Viction or XDC Network)."
         ),
     )
 

@@ -3,17 +3,74 @@
 import os
 from typing import Any, Optional
 
+from decimal import Decimal
+
 import requests
 from pydantic import BaseModel, Field, model_validator
 
 BASE_URL = "https://api.insumermodel.com/v1"
 
 
+
+def _decimal_str(value: Any) -> str:
+    """A number as a plain decimal string.
+
+    ``str()`` of a float switches to exponent notation for very small and very
+    large values ("1e-07"), which the API does not read as a decimal string.
+    """
+    if isinstance(value, bool):
+        raise ValueError("a condition quantity must be a number or a decimal string, not a bool")
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return format(Decimal(repr(value)), "f")
+    return str(value)
+
+def _raise_for_status(resp: requests.Response) -> None:
+    """Raise ``requests.HTTPError`` on a 4xx/5xx, carrying the API's own message.
+
+    The API explains a rejected request in its JSON body (``error.message``),
+    and a refused read (503) lists the conditions it could not read in
+    ``error.failedConditions``. Both are included in the exception message so
+    the caller, or the agent, can see what to change. The response is attached
+    as ``exc.response``. When the body is not JSON, the plain status error is
+    raised.
+    """
+    status = resp.status_code
+    if not isinstance(status, int) or status < 400:
+        return
+    detail = ""
+    try:
+        body = resp.json()
+    except ValueError:
+        body = None
+    if isinstance(body, dict):
+        err = body.get("error")
+        if isinstance(err, dict):
+            parts = []
+            if err.get("code"):
+                parts.append(str(err["code"]))
+            if err.get("message"):
+                parts.append(str(err["message"]))
+            detail = ": ".join(parts)
+            failed = err.get("failedConditions")
+            if failed:
+                detail = f"{detail} (failedConditions: {failed})"
+        elif isinstance(err, str):
+            detail = err
+    if not detail:
+        resp.raise_for_status()
+        raise requests.HTTPError(f"InsumerAPI returned HTTP {status}", response=resp)
+    raise requests.HTTPError(
+        f"InsumerAPI returned HTTP {status}: {detail}", response=resp
+    )
+
+
 class InsumerAPIWrapper(BaseModel):
     """Wrapper around The Insumer Model API.
 
     Provides privacy-preserving on-chain verification and token-gated commerce
-    across 38 blockchains (32 EVM + Solana + XRPL + Bitcoin + Tron + Stellar + Sui).
+    across 37 blockchains (31 EVM + Solana + XRPL + Bitcoin + Tron + Stellar + Sui).
     Verifies token balances and NFT ownership without exposing actual wallet
     balances.
 
@@ -55,7 +112,7 @@ class InsumerAPIWrapper(BaseModel):
             params=params,
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def _public_post(self, path: str, json_body: Optional[dict] = None) -> dict:
@@ -65,7 +122,7 @@ class InsumerAPIWrapper(BaseModel):
             json=json_body or {},
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def _post(self, path: str, json_body: Optional[dict] = None) -> dict:
@@ -75,7 +132,7 @@ class InsumerAPIWrapper(BaseModel):
             json=json_body or {},
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def _put(self, path: str, json_body: Optional[dict] = None) -> dict:
@@ -85,7 +142,7 @@ class InsumerAPIWrapper(BaseModel):
             json=json_body or {},
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def get_jwks(self) -> dict:
@@ -106,7 +163,7 @@ class InsumerAPIWrapper(BaseModel):
             f"{BASE_URL}/jwks",
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def get_compliance_templates(self) -> dict:
@@ -122,7 +179,7 @@ class InsumerAPIWrapper(BaseModel):
             f"{BASE_URL}/compliance/templates",
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def attest(
@@ -151,13 +208,17 @@ class InsumerAPIWrapper(BaseModel):
                   "farcaster_id", "evm_view_call", "ratio_to_amount", "ratio_to_supply",
                   "erc8004_agent", or "erc7710_delegation"
                 - contractAddress: Token/NFT contract address (for token_balance/nft_ownership/ratio_*).
+                  "native" is for token_balance and ratio_to_amount only. nft_ownership
+                  needs the NFT contract address (0x + 40 hex on EVM); "native" there is a 400.
                   For XRPL: use r-address issuer for trust line tokens, or "native" for XRP.
                   For Stellar: use the asset issuer's G-address, or "native" for XLM.
-                  For Sui: use the fully-qualified type string (e.g. "0x...::usdc::USDC").
+                  For Sui: use the full coin type address::module::Name
+                  (e.g. "0x...::usdc::USDC"). Native SUI is "0x2::sui::SUI";
+                  "native" is not accepted on Sui (400).
                   ratio_to_supply requires an ERC-20 contract (no "native").
                 - chainId: EVM chain ID (int, includes 50 for XDC), "solana", "xrpl",
                   "bitcoin", "tron", "stellar", or "sui" (ratio_to_amount and
-                  ratio_to_supply are RPC EVM chains only)
+                  ratio_to_supply are EVM chains only)
                 - threshold: Min balance for token_balance, as a decimal string in
                   token/display units (e.g. "1000", not 1000) to preserve full
                   precision. A number is accepted and coerced to a string.
@@ -168,7 +229,9 @@ class InsumerAPIWrapper(BaseModel):
                 - minFraction: required share of total supply as a decimal string in (0, 1]
                   (for ratio_to_supply, e.g. "0.005" for 0.5%; met iff balance / totalSupply >= minFraction).
                   A number is accepted and coerced to a string for all three.
-                - decimals: Token decimals (auto-detected if omitted)
+                - decimals: Optional. Leave it out: the token's own decimals are always
+                  read from the chain. If sent it is only a cross-check, and a value that
+                  differs from the token's own decimals is rejected with a 400.
                 - label: Human-readable label
                 - taxon: XRPL NFToken taxon filter (integer, optional)
                 - currency: XRPL trust line currency code (e.g. "USD" for RLUSD)
@@ -192,9 +255,11 @@ class InsumerAPIWrapper(BaseModel):
                 XLM or classic trustline assets. Soroban contract balances not
                 visible. Use chainId "stellar".
             sui_wallet: Sui wallet address (0x + 64 hex chars). For verifying
-                SUI or Sui-native tokens (USDC). Use chainId "sui".
+                SUI or Sui-native tokens (USDC). Use chainId "sui" with the coin
+                type as contractAddress ("0x2::sui::SUI" for native SUI, not "native").
             proof: Set to "merkle" for EIP-1186 Merkle storage proofs.
-                Available for token_balance conditions on RPC chains only.
+                Available for token_balance conditions on 27 of the 31 EVM chains
+                (not ZKsync Era, Sei, Viction or XDC Network).
                 Costs 2 credits. Reveals raw balance to the caller.
             format: Set to "jwt" to include a Wallet Auth by InsumerAPI token
                 (ES256-signed JWT) in the response, with its post-quantum
@@ -211,9 +276,12 @@ class InsumerAPIWrapper(BaseModel):
             signatures.
             Each result includes ``blockNumber`` and ``blockTimestamp`` (EVM)
             or ``ledgerIndex`` and ``ledgerHash`` (XRPL/Stellar) or
-            ``checkpointSequence`` and ``checkpointDigest`` (Sui). XRPL trust
-            line token results also include ``trustLineState: { frozen: bool }``
-            — a frozen trust line causes ``met: false`` regardless of balance.
+            ``checkpointSequence`` and ``checkpointDigest`` (Sui). The EVM
+            block and the XRPL ledger name the state read, the Solana slot is
+            a floor, and the Bitcoin, Tron, Stellar and Sui anchors are tip
+            markers (freshness anchors). XRPL trust
+            line token results also include ``trustLineState: { frozen: bool }``:
+            a frozen trust line causes ``met: false`` regardless of balance.
             Stellar non-native results surface ``assetCode`` in ``evaluatedCondition``.
             When format="jwt", response includes a ``jwt`` field with a
             Wallet Auth by InsumerAPI token (ES256-signed JWT).
@@ -237,7 +305,7 @@ class InsumerAPIWrapper(BaseModel):
                 fields = _str_fields.get(c.get("type"))
                 if fields:
                     updates = {
-                        f: str(c[f])
+                        f: _decimal_str(c[f])
                         for f in fields
                         if c.get(f) is not None and not isinstance(c[f], str)
                     }
@@ -306,7 +374,8 @@ class InsumerAPIWrapper(BaseModel):
             sui_wallet: Sui wallet address (0x + 64 hex). Adds institutional
                 USDC on Sui check.
             proof: Set to "merkle" for EIP-1186 Merkle storage proofs on
-                stablecoin and governance checks. Costs 6 credits.
+                stablecoin and governance checks, on 27 of the 31 EVM chains
+                (not ZKsync Era, Sei, Viction or XDC Network). Costs 6 credits.
 
         Returns:
             API response with trust profile, ECDSA signature (``sig``),
@@ -385,7 +454,7 @@ class InsumerAPIWrapper(BaseModel):
             params=params,
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def get_merchant(self, merchant_id: str) -> dict:
@@ -394,7 +463,7 @@ class InsumerAPIWrapper(BaseModel):
             f"{BASE_URL}/merchants/{merchant_id}",
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def list_tokens(
@@ -416,7 +485,7 @@ class InsumerAPIWrapper(BaseModel):
             params=params,
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def check_discount(
@@ -451,7 +520,7 @@ class InsumerAPIWrapper(BaseModel):
             params=params,
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()
 
     def verify(
@@ -777,5 +846,5 @@ class InsumerAPIWrapper(BaseModel):
             f"{BASE_URL}/codes/{code}",
             timeout=self.timeout,
         )
-        resp.raise_for_status()
+        _raise_for_status(resp)
         return resp.json()

@@ -4,6 +4,7 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 
 from langchain_insumer import (
     InsumerAPIWrapper,
@@ -183,6 +184,84 @@ class TestInsumerAPIWrapper:
             wallet="0x1234567890abcdef1234567890abcdef12345678",
         )
         assert result["data"]["totalDiscount"] == 15
+
+
+def _error_response(status, json_body=None):
+    resp = requests.Response()
+    resp.status_code = status
+    resp.reason = "Error"
+    resp.url = "https://api.insumermodel.com/v1/attest"
+    if json_body is None:
+        resp._content = b"<html>upstream error</html>"
+    else:
+        resp._content = json.dumps(json_body).encode()
+    return resp
+
+
+class TestErrorSurfacing:
+    @patch("langchain_insumer.wrapper.requests.post")
+    def test_400_message_is_surfaced(self, mock_post, api):
+        message = "decimals does not match the token: the token reports 6"
+        mock_post.return_value = _error_response(
+            400, {"ok": False, "error": {"code": "invalid_request", "message": message}}
+        )
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            api.attest(
+                wallet="0x1234567890abcdef1234567890abcdef12345678",
+                conditions=[{"type": "token_balance", "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "chainId": 1, "threshold": "100", "decimals": 18}],
+            )
+
+        assert message in str(excinfo.value)
+        assert "400" in str(excinfo.value)
+        assert excinfo.value.response.status_code == 400
+
+    @patch("langchain_insumer.wrapper.requests.post")
+    def test_503_lists_failed_conditions(self, mock_post, api):
+        mock_post.return_value = _error_response(
+            503,
+            {
+                "ok": False,
+                "error": {
+                    "code": "rpc_failure",
+                    "message": "Unable to read one or more data sources",
+                    "failedConditions": [{"condition": 0, "chainId": "sui", "source": "balance_read"}],
+                },
+            },
+        )
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            api.wallet_trust(wallet="0x1234567890abcdef1234567890abcdef12345678")
+
+        text = str(excinfo.value)
+        assert "rpc_failure" in text
+        assert "failedConditions" in text
+        assert "balance_read" in text
+        assert excinfo.value.response.status_code == 503
+
+    @patch("langchain_insumer.wrapper.requests.get")
+    def test_non_json_body_falls_back_to_status_error(self, mock_get, api):
+        mock_get.return_value = _error_response(502)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            api.get_credits()
+
+        assert "502" in str(excinfo.value)
+        assert excinfo.value.response.status_code == 502
+
+    @patch("langchain_insumer.wrapper.requests.post")
+    def test_attest_tool_raises_with_message(self, mock_post, api):
+        message = "Sui contractAddress must be a coin type (address::module::Name)"
+        mock_post.return_value = _error_response(
+            400, {"ok": False, "error": {"code": "invalid_request", "message": message}}
+        )
+
+        tool = InsumerAttestTool(api_wrapper=api)
+        with pytest.raises(requests.HTTPError, match="coin type"):
+            tool._run(
+                conditions=json.dumps([{"type": "token_balance", "contractAddress": "native", "chainId": "sui", "threshold": "1"}]),
+                sui_wallet="0x" + "ab" * 32,
+            )
 
 
 class TestTools:
