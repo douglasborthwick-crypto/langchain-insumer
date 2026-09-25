@@ -53,9 +53,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://insumermodel.com/developers/"
 Documentation = "https://insumermodel.com/llms-full.txt"
-Repository = "https://github.com/douglasborthwick-crypto/langchain-insumer"
+Repository = "https://github.com/insumerapi/langchain-insumer"
 "API Reference" = "https://insumermodel.com/openapi.yaml"
-"Bug Tracker" = "https://github.com/douglasborthwick-crypto/langchain-insumer/issues"
+"Bug Tracker" = "https://github.com/insumerapi/langchain-insumer/issues"
 
 [tool.setuptools.packages.find]
 include = ["langchain_insumer*"]
